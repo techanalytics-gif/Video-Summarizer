@@ -127,6 +127,17 @@ class ProcessingPipeline:
                 duration,
                 video_genre=video_genre
             )
+            
+            # Filter out ads/sponsorships
+            original_topics = transcript_analysis.get("topics", [])
+            filtered_topics = [
+                t for t in original_topics 
+                if t.get("type", "content") != "ad" and "sponsor" not in t.get("title", "").lower()
+            ]
+            if len(filtered_topics) < len(original_topics):
+                print(f"Filtered out {len(original_topics) - len(filtered_topics)} ad/sponsorship topics.")
+                transcript_analysis["topics"] = filtered_topics
+                
             await self._update_job(job_id, {"progress": 0.6})
             
             # Step 5: Extract frames
@@ -295,6 +306,17 @@ class ProcessingPipeline:
                 duration,
                 video_genre=video_genre
             )
+            
+            # CRITICAL: Post-synthesis ad cleanup
+            # Sometimes synthesis re-introduces ad topics if they are prominent
+            original_synth_topics = synthesis.get("topics", [])
+            clean_synth_topics = [
+                t for t in original_synth_topics 
+                if "sponsor" not in t.get("title", "").lower() and t.get("type", "content") != "ad"
+            ]
+            if len(clean_synth_topics) < len(original_synth_topics):
+                 print(f"Filtered {len(original_synth_topics) - len(clean_synth_topics)} ad topics from synthesis result.")
+                 synthesis["topics"] = clean_synth_topics
             
             # Step 7.1: Map Visuals to Topics (Phase 4)
             print("Mapping visual sub-topics to synthesized main topics...")
