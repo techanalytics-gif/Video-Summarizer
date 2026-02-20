@@ -40,7 +40,7 @@ CORS_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://127.0.0.1:3000",
     # Production - Add your Vercel URL here
-    "https://video-summariser-eight.vercel.app",
+    "https://video-summarizer-dusky.vercel.app",
     # For testing - remove in production for security
     "https://long-from-video-summariser-beyond-ai.onrender.com",
 ]
