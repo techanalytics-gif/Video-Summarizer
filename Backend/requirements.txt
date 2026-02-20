@@ -38,3 +38,6 @@ aiofiles==23.2.1
 
 # Progress tracking
 tqdm==4.66.1
+
+# Automation
+playwright>=1.40.0

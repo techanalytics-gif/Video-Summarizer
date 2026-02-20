@@ -8,6 +8,8 @@ from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from googleapiclient.errors import HttpError
+import httplib2
+from google_auth_httplib2 import AuthorizedHttp
 import config
 
 
@@ -31,7 +33,12 @@ class GoogleDriveService:
         if self.creds and self.creds.expired and self.creds.refresh_token:
             self.creds.refresh(Request())
         
-        self.service = build('drive', 'v3', credentials=self.creds)
+        # Create an authorized http object with a higher timeout to avoid read timeouts
+        # Default timeout is often too short for slower connections or large files
+        http = httplib2.Http(timeout=600)  # 10 minutes timeout
+        authorized_http = AuthorizedHttp(self.creds, http=http)
+        
+        self.service = build('drive', 'v3', http=authorized_http)
     
     def extract_file_id(self, drive_url: str) -> str:
         """Extract file ID from Google Drive URL"""

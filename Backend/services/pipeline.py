@@ -8,6 +8,7 @@ from models.database import db
 from models.video_job import VideoJob, TranscriptSegment, Topic, Frame, SubTopic
 from services.drive_service import drive_service
 from services.youtube_service import youtube_service
+from services.playwright_youtube_service import playwright_youtube_service
 from services.gemini_service import gemini_service
 from utils.ffmpeg_utils import FFmpegUtils
 from utils.roi_utils import merge_time_windows
@@ -409,8 +410,15 @@ class ProcessingPipeline:
                 "video_source": "youtube"
             })
             
-            # Download video
-            youtube_service.download_video(youtube_url, video_path, video_id)
+            # Download video using Playwright (primary method as yt-dlp is unreliable)
+            try:
+                print(f"Downloading YouTube video {video_id} using Playwright strategy...")
+                await playwright_youtube_service.download_video(youtube_url, video_path)
+            except Exception as e:
+                print(f"Playwright download failed: {e}")
+                print("Falling back to yt-dlp...")
+                # Fallback to standard yt-dlp
+                youtube_service.download_video(youtube_url, video_path, video_id)
             
         else:
             # Download from Google Drive (existing logic)
