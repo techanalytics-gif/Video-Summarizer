@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useUser } from '@clerk/clerk-react';
 import VideoChatBot from '../components/VideoChatBot';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -7,6 +8,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 const Landing = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { user } = useUser();
   const [videoUrl, setVideoUrl] = useState('');
   const [videoName, setVideoName] = useState('');
   const [jobId, setJobId] = useState('');
@@ -80,6 +82,9 @@ const Landing = () => {
         if (videoName.trim()) {
           formData.append('video_name', videoName.trim());
         }
+        if (user?.id) {
+          formData.append('user_id', user.id);
+        }
 
         const resp = await fetch(`${API_BASE}/api/videos/process-upload`, {
           method: 'POST',
@@ -125,12 +130,14 @@ const Landing = () => {
         payload = {
           youtube_url: url,
           video_name: videoName.trim() || 'Untitled Video',
+          user_id: user?.id || null,
         };
       } else {
         endpoint = `${API_BASE}/api/videos/process`;
         payload = {
           drive_video_url: url,
           video_name: videoName.trim() || 'Untitled Video',
+          user_id: user?.id || null,
         };
       }
 

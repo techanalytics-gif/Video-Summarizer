@@ -60,15 +60,18 @@ class TranscriptSegment(BaseModel):
 class VideoJobCreate(BaseModel):
     drive_video_url: str
     video_name: Optional[str] = None
+    user_id: Optional[str] = None
 
 
 class YouTubeJobCreate(BaseModel):
     youtube_url: str
     video_name: Optional[str] = None
+    user_id: Optional[str] = None
 
 
 class UploadJobCreate(BaseModel):
     video_name: Optional[str] = None
+    user_id: Optional[str] = None
 
 
 class VideoJob(BaseModel):
@@ -80,6 +83,7 @@ class VideoJob(BaseModel):
     youtube_video_id: Optional[str] = None  # YouTube video ID
     uploaded_video_path: Optional[str] = None  # Path to uploaded video file
     video_name: Optional[str] = None
+    user_id: Optional[str] = None  # Clerk user ID
     status: str = "pending"  # pending, downloading, processing, completed, failed
     progress: float = 0.0
     error_message: Optional[str] = None
@@ -157,6 +161,7 @@ class ReportSummary(BaseModel):
     job_id: str
     video_name: Optional[str] = None
     status: str
+    user_id: Optional[str] = None
     duration: Optional[float] = None
     topics_count: int = 0
     created_at: datetime

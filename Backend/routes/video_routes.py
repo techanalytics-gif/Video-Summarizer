@@ -47,6 +47,7 @@ async def process_video(
         job = VideoJob(
             drive_video_url=job_request.drive_video_url,
             video_name=job_request.video_name,
+            user_id=job_request.user_id,
             status="pending",
             progress=0.0
         )
@@ -92,6 +93,7 @@ async def process_youtube_video(
         job = VideoJob(
             youtube_url=job_request.youtube_url,
             video_name=job_request.video_name,
+            user_id=job_request.user_id,
             video_source="youtube",
             status="pending",
             progress=0.0
@@ -120,6 +122,7 @@ async def process_youtube_video(
 async def process_uploaded_video(
     file: UploadFile = File(...),
     video_name: str = Form(None),
+    user_id: str = Form(None),
     background_tasks: BackgroundTasks = BackgroundTasks()
 ):
     """
@@ -148,6 +151,7 @@ async def process_uploaded_video(
         job = VideoJob(
             video_name=video_name or file.filename or "Uploaded Video",
             video_source="upload",
+            user_id=user_id,
             status="pending",
             progress=0.0
         )
@@ -346,7 +350,8 @@ async def delete_job(job_id: str):
 async def get_reports(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
-    status: str = Query(None)
+    status: str = Query(None),
+    user_id: str = Query(None)
 ):
     """
     Get all past reports with pagination
@@ -355,6 +360,7 @@ async def get_reports(
         page: Page number (1-indexed)
         limit: Number of results per page
         status: Filter by status (optional)
+        user_id: Filter by Clerk user ID (optional)
     
     Returns:
         List of report summaries
@@ -367,6 +373,10 @@ async def get_reports(
         # If a status filter is provided, keep it only if it's completed; otherwise still enforce completed
         if status and status == "completed":
             query["status"] = "completed"
+        
+        # Filter by user_id if provided
+        if user_id:
+            query["user_id"] = user_id
         
         # Calculate skip
         skip = (page - 1) * limit
