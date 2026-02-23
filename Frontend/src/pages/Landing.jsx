@@ -577,6 +577,118 @@ const Landing = () => {
                 </ul>
               </div>
             )}
+
+            {/* 5-Slide Executive Summary */}
+            {result.slide_summary?.length > 0 && (
+              <div style={{ marginTop: '24px' }}>
+                <h4 style={{ marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span>📊 5-Slide Summary</span>
+                  <span style={{
+                    fontSize: '11px',
+                    padding: '3px 10px',
+                    borderRadius: '999px',
+                    background: 'rgba(99,102,241,0.15)',
+                    color: '#a5b4fc',
+                    fontWeight: '500',
+                    border: '1px solid rgba(99,102,241,0.3)'
+                  }}>
+                    {result.slide_summary.length} slides
+                  </span>
+                </h4>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                  gap: '14px',
+                }}>
+                  {result.slide_summary.map((slide, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '14px',
+                        padding: '18px',
+                        transition: 'border-color 0.2s ease, transform 0.2s ease',
+                        cursor: 'default',
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
+                    >
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        marginBottom: '12px'
+                      }}>
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '8px',
+                          background: 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(34,197,94,0.3))',
+                          color: '#e0e7ff',
+                          fontSize: '13px',
+                          fontWeight: '700',
+                          border: '1px solid rgba(99,102,241,0.3)',
+                          flexShrink: 0
+                        }}>
+                          {idx + 1}
+                        </span>
+                        <span style={{
+                          fontSize: '14px',
+                          fontWeight: '700',
+                          color: '#e0e7ff',
+                          lineHeight: '1.3'
+                        }}>
+                          {slide.title}
+                        </span>
+                      </div>
+                      <ul style={{
+                        margin: 0,
+                        paddingLeft: '16px',
+                        listStyle: 'none',
+                      }}>
+                        {slide.bullets?.map((bullet, bIdx) => (
+                          <li
+                            key={bIdx}
+                            style={{
+                              fontSize: '13px',
+                              color: '#c3c9e6',
+                              lineHeight: '1.5',
+                              marginBottom: '6px',
+                              position: 'relative',
+                              paddingLeft: '14px',
+                            }}
+                          >
+                            <span style={{
+                              position: 'absolute',
+                              left: 0,
+                              top: '6px',
+                              width: '5px',
+                              height: '5px',
+                              borderRadius: '50%',
+                              background: 'rgba(99,102,241,0.6)',
+                            }} />
+                            <span dangerouslySetInnerHTML={{
+                              __html: bullet.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#e0e7ff;font-weight:600">$1</strong>')
+                            }} />
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {result.entities && (
               <div className="chips">
                 {Object.entries(result.entities).flatMap(([type, items]) =>

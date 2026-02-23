@@ -1122,6 +1122,112 @@ Return JSON:
                 "entities": transcript_analysis.get("entities", {})
             }
     
+    async def generate_slide_summary(
+        self,
+        transcript_text: str,
+        executive_summary: str,
+        key_takeaways: list,
+        topics: list,
+        duration: float,
+        video_genre: str = None
+    ) -> list:
+        """
+        Generate a 5-slide executive presentation summary using Gemini.
+        
+        Returns:
+            List of 5 slide dicts: [{"title": str, "bullets": [str]}]
+        """
+        # Build a compact context from the report
+        topics_summary = ""
+        for i, t in enumerate(topics[:15]):
+            title = t.get("title", "")
+            summary = t.get("summary", "")
+            topics_summary += f"  Topic {i+1}: {title} — {summary}\n"
+        
+        takeaways_text = "\n".join(f"  - {t}" for t in key_takeaways) if key_takeaways else "  (none)"
+        
+        # Truncate transcript to fit prompt limits
+        transcript_excerpt = transcript_text[:30000] if len(transcript_text) > 30000 else transcript_text
+        
+        prompt = f"""You are an expert executive communication strategist.
+Your task is to convert the provided video transcript and report into a concise 5-slide executive presentation that captures the complete intellectual arc of the video.
+
+The video is a {duration/60:.1f}-minute {video_genre or 'video'}.
+
+Executive Summary: {executive_summary}
+
+Key Takeaways:
+{takeaways_text}
+
+Topics Covered:
+{topics_summary}
+
+Transcript (excerpt):
+{transcript_excerpt}
+
+Follow these rules strictly:
+- Produce exactly 5 slides.
+- Each slide must have a strong slide title (clear and outcome-oriented) and 4–6 bullet points.
+- Each bullet must be 1- 2 lines max.
+- No fluff, no repetition.
+- Avoid generic phrases like "The speaker discusses."
+- Focus on structured thinking and knowledge compression.
+- If technical, simplify without dumbing down.
+- If conceptual, make it structured and concrete.
+- If tutorial-based, capture workflow, logic, and key steps.
+- If business-oriented, highlight strategic implications and decision frameworks.
+
+Structure the slides as follows:
+Slide 1 - Core Thesis & Context: What is the central idea or problem? Why does it matter? Who is it relevant for?
+Slide 2 - Key Concepts / Framework / Architecture: Main building blocks, core mechanisms, important terminology explained simply.
+Slide 3 - Deep Insights / Critical Mechanisms: Non-obvious insights, trade-offs, strategic or technical depth, what differentiates this from basic knowledge.
+Slide 4 - Practical Applications / Implementation: How this can be applied, real-world usage, step-by-step logic if relevant, business or technical execution implications.
+Slide 5 - Strategic Takeaways & Next Moves: Long-term implications, risks or limitations, where this is heading, clear actionable next steps.
+
+Return output in this JSON format:
+{{
+  "slides": [
+    {{
+      "title": "Slide title here",
+      "bullets": [
+        "Bullet point 1",
+        "Bullet point 2",
+        "Bullet point 3",
+        "Bullet point 4"
+      ]
+    }}
+  ]
+}}
+
+Generate exactly 5 slides."""
+
+        def _generate():
+            print("Generating 5-slide executive summary with Gemini...")
+            response = self.text_model.generate_content(prompt)
+            return self._parse_json_response(response.text)
+        
+        try:
+            result = retry_with_backoff(_generate, max_retries=2)
+            
+            if result and "slides" in result:
+                slides = result["slides"][:5]  # Ensure max 5
+                # Validate structure
+                validated = []
+                for slide in slides:
+                    validated.append({
+                        "title": slide.get("title", f"Slide {len(validated)+1}"),
+                        "bullets": slide.get("bullets", [])[:6]  # Max 6 bullets
+                    })
+                print(f"Generated {len(validated)} slides for executive summary.")
+                return validated
+            else:
+                print("Slide generation returned unexpected format, returning empty.")
+                return []
+                
+        except Exception as e:
+            print(f"Error generating slide summary: {e}")
+            return []
+
     def _parse_json_response(self, text: str) -> Optional[Dict]:
         """Extract and parse JSON from model response with aggressive error recovery"""
         import re

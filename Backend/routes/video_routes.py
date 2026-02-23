@@ -263,6 +263,7 @@ async def get_job_results(job_id: str):
             topics=job.get("topics", []),
             key_takeaways=job.get("key_takeaways", []),
             entities=job.get("entities", {}),
+            slide_summary=job.get("slide_summary", []),
             total_frames=job.get("total_frames", 0),
             processing_cost=job.get("processing_cost"),
             completed_at=job.get("completed_at"),

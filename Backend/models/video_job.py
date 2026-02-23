@@ -34,6 +34,11 @@ class SubTopic(BaseModel):
     visual_summary: str
     timestamp: str
     image_url: Optional[str] = None
+
+
+class Slide(BaseModel):
+    title: str
+    bullets: List[str] = []
     
     
 class Topic(BaseModel):
@@ -100,6 +105,7 @@ class VideoJob(BaseModel):
     executive_summary: Optional[str] = None
     key_takeaways: List[str] = []
     entities: Dict[str, List[str]] = {}
+    slide_summary: List[Slide] = []  # 5-slide executive presentation
 
     # Content classification (used to adapt prompting)
     video_genre: Optional[str] = None  # e.g. "podcast_panel", "educational_lecture", "vlog", etc.
@@ -145,6 +151,7 @@ class VideoJobResult(BaseModel):
     frames: List[Frame] = []
     key_takeaways: List[str] = []
     entities: Dict[str, List[str]] = {}
+    slide_summary: List[Slide] = []  # 5-slide executive presentation
     total_frames: int = 0
     processing_cost: Optional[float] = None
     completed_at: Optional[datetime] = None

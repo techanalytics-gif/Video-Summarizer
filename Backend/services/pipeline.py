@@ -327,6 +327,22 @@ class ProcessingPipeline:
             # Update synthesis with mapped topics
             synthesis["topics"] = mapped_topics
             
+            # Step 7.2: Generate 5-Slide Executive Summary
+            print("Generating 5-slide executive summary...")
+            slide_summary = []
+            try:
+                slide_summary = await gemini_service.generate_slide_summary(
+                    transcript_text=transcript_text,
+                    executive_summary=synthesis.get("executive_summary", ""),
+                    key_takeaways=synthesis.get("key_takeaways", []),
+                    topics=synthesis.get("topics", []),
+                    duration=duration,
+                    video_genre=video_genre
+                )
+                print(f"Generated {len(slide_summary)} slides.")
+            except Exception as e:
+                print(f"Slide summary generation failed (non-blocking): {e}")
+            
             # Step 8: Build final output
             topics = await self._build_topics(
                 synthesis.get("topics", []),
@@ -347,6 +363,7 @@ class ProcessingPipeline:
                 "executive_summary": synthesis.get("executive_summary", ""),
                 "key_takeaways": synthesis.get("key_takeaways", []),
                 "entities": synthesis.get("entities", {}),
+                "slide_summary": slide_summary,
                 "report": synthesis,  # Store full synthesis result
                 "video_genre": video_genre,
                 "genre_confidence": genre_confidence,
