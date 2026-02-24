@@ -26,7 +26,9 @@ const Landing = () => {
     if (!url) return 'auto';
     const youtubePattern = /(?:youtube\.com|youtu\.be)/;
     const drivePattern = /drive\.google\.com/;
+    const playlistPattern = /[?&]list=/;
 
+    if (youtubePattern.test(url) && playlistPattern.test(url)) return 'playlist';
     if (youtubePattern.test(url)) return 'youtube';
     if (drivePattern.test(url)) return 'drive';
     return 'auto';
@@ -67,6 +69,32 @@ const Landing = () => {
     setStatus('pending');
     setProgress(0);
     setJobId('');
+
+    // Handle playlist submission
+    if (videoSource === 'playlist') {
+      try {
+        const resp = await fetch(`${API_BASE}/api/topics/process`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            playlist_url: videoUrl,
+            user_id: user?.id || null
+          })
+        });
+        if (!resp.ok) {
+          const errData = await resp.json();
+          throw new Error(errData.detail || 'Failed to process playlist');
+        }
+        const data = await resp.json();
+        // Navigate to the new topic's detail page
+        navigate(`/topics/${data.topic_id}`);
+        return;
+      } catch (err) {
+        setError(err.message || 'Failed to process playlist');
+        setStatus('idle');
+        return;
+      }
+    }
 
     // Handle file upload
     if (videoSource === 'upload' || uploadedFile) {
@@ -401,6 +429,28 @@ const Landing = () => {
           >
             📊 Past Reports
           </button>
+          <button
+            onClick={() => navigate('/topics')}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: 'rgba(255,255,255,0.1)',
+              color: 'white',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={(e) => {
+              e.target.style.backgroundColor = 'rgba(255,255,255,0.15)';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.backgroundColor = 'rgba(255,255,255,0.1)';
+            }}
+          >
+            📚 Topics
+          </button>
           <div className="status-chip">
             <span className={`dot dot-${status === 'completed' ? 'green' : status === 'failed' ? 'red' : 'amber'}`} />
             <span>{status === 'idle' || viewingPastReport ? 'Completed' : status}</span>
@@ -438,6 +488,7 @@ const Landing = () => {
               <option value="upload">Upload Video File</option>
               <option value="drive">Google Drive</option>
               <option value="youtube">YouTube</option>
+              <option value="playlist">YouTube Playlist</option>
             </select>
           </div>
 
@@ -479,7 +530,9 @@ const Landing = () => {
               <label>Video URL (Google Drive or YouTube)</label>
               <input
                 type="url"
-                placeholder="https://drive.google.com/file/d/FILE_ID/view or https://youtube.com/watch?v=VIDEO_ID"
+                placeholder={videoSource === 'playlist'
+                  ? 'https://www.youtube.com/playlist?list=PLxxxxxx'
+                  : 'https://drive.google.com/file/d/FILE_ID/view or https://youtube.com/watch?v=VIDEO_ID'}
                 value={videoUrl}
                 onChange={(e) => {
                   setVideoUrl(e.target.value);
@@ -491,6 +544,7 @@ const Landing = () => {
                 required={videoSource !== 'upload'}
               />
               <div style={{ marginTop: '8px', fontSize: '12px', color: '#9ca3af' }}>
+                {videoUrl && detectVideoSource(videoUrl) === 'playlist' && '✓ YouTube Playlist detected'}
                 {videoUrl && detectVideoSource(videoUrl) === 'youtube' && '✓ YouTube URL detected'}
                 {videoUrl && detectVideoSource(videoUrl) === 'drive' && '✓ Google Drive URL detected'}
                 {videoUrl && detectVideoSource(videoUrl) === 'auto' && videoSource !== 'upload' && '⚠️ Please enter a valid Drive or YouTube URL'}
@@ -517,7 +571,7 @@ const Landing = () => {
                 polling
               }
             >
-              {status === 'pending' || polling ? 'Processing…' : 'Start Processing'}
+              {status === 'pending' || polling ? 'Processing…' : videoSource === 'playlist' ? '📚 Process Playlist' : 'Start Processing'}
             </button>
             {jobId && !viewingPastReport && <span className="muted">Job ID: {jobId}</span>}
           </div>

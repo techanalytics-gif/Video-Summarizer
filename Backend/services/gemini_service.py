@@ -2,6 +2,7 @@ import os
 import json
 import time
 import re
+import asyncio
 from typing import List, Dict, Any, Optional
 import google.generativeai as genai
 from PIL import Image
@@ -407,11 +408,10 @@ Return JSON:
             print(f"Uploading audio chunk starting at {start_time}s...")
             
             # Use the correct API for google-generativeai >= 0.4.0
-            with open(audio_path, 'rb') as audio_file_obj:
-                audio_file = genai.upload_file(
-                    path=audio_path,
-                    mime_type="audio/wav"
-                )
+            audio_file = genai.upload_file(
+                path=audio_path,
+                mime_type="audio/wav"
+            )
             
             prompt = """
             Transcribe this audio with speaker diarization. 
@@ -485,7 +485,8 @@ Return JSON:
         self, 
         transcript_text: str,
         duration: float,
-        video_genre: Optional[str] = None
+        video_genre: Optional[str] = None,
+        playlist_context: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Analyze transcript to extract topics, key moments, etc. with retry logic
@@ -530,7 +531,8 @@ Return JSON:
                     len(chunks),
                     chunk_start_approx,
                     chunk_end_approx,
-                    video_genre=video_genre
+                    video_genre=video_genre,
+                    playlist_context=playlist_context
                 )
                 if result:
                     # Always provide full duration context, so each chunk should generate topics for full video
@@ -557,7 +559,7 @@ Return JSON:
                 "visual_cues": all_visual_cues
             }
         else:
-            return await self._analyze_transcript_chunk(transcript_text, duration, 0, 1, 0.0, duration, video_genre=video_genre)
+            return await self._analyze_transcript_chunk(transcript_text, duration, 0, 1, 0.0, duration, video_genre=video_genre, playlist_context=playlist_context)
     
     def _deduplicate_topics(self, topics: List[Dict], duration: float) -> List[Dict]:
         """Deduplicate and merge overlapping topics"""
@@ -605,7 +607,8 @@ Return JSON:
         total_chunks: int,
         chunk_start_time: float = None,
         chunk_end_time: float = None,
-        video_genre: Optional[str] = None
+        video_genre: Optional[str] = None,
+        playlist_context: Optional[str] = None
     ) -> Dict[str, Any]:
         """Analyze a single transcript chunk"""
         def _analyze():
@@ -623,6 +626,8 @@ Return JSON:
         CRITICAL: You must analyze the transcript and generate topics with timestamps that cover the FULL video duration from 00:00:00 to {seconds_to_timestamp(duration)}. Do not stop at just the beginning or middle - ensure topics are distributed throughout the entire video.{time_info}
 
         {genre_snippet}
+
+        {f'{playlist_context}' if playlist_context else ''}
         
         Extract the following:
         
@@ -1022,7 +1027,8 @@ Return JSON:
         transcript_analysis: Dict[str, Any],
         frame_analyses: List[Dict[str, Any]],
         duration: float,
-        video_genre: Optional[str] = None
+        video_genre: Optional[str] = None,
+        playlist_context: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Synthesize transcript and frame analyses into final output with retry logic
@@ -1052,6 +1058,8 @@ Return JSON:
         
         IMPORTANT: You must preserve ALL topics from the transcript analysis. Do not filter, remove, or skip any topics. 
         All topics should cover the full video duration from 00:00:00 to {seconds_to_timestamp(duration)}.
+
+        {f'{playlist_context}' if playlist_context else ''}
 
         {genre_snippet}
         
@@ -1281,6 +1289,103 @@ Generate exactly 5 slides."""
             print(f"JSON parsing failed: {str(e)}")
             # print(f"Failed JSON text subset: {text[:200]}...")
             return None
+
+
+    async def generate_topic_summary(
+        self,
+        topic_title: str,
+        channel: str,
+        chapter_summaries: list
+    ) -> dict:
+        """
+        Generate a curriculum-level summary for a topic (playlist).
+        
+        Args:
+            topic_title: Playlist title
+            channel: Channel name
+            chapter_summaries: List of dicts with chapter_number, title, executive_summary, key_takeaways
+        
+        Returns:
+            Dict with topic_summary, learning_objectives, prerequisites, difficulty_level,
+            estimated_total_time, chapter_outline
+        """
+        def _generate():
+            chapters_text = ""
+            for ch in chapter_summaries:
+                takeaways = ch.get("key_takeaways", [])[:5]
+                takeaways_str = "\n".join(f"  - {t}" for t in takeaways) if takeaways else "  (none)"
+                chapters_text += f"""
+Chapter {ch.get('chapter_number', '?')}: "{ch.get('title', 'Untitled')}"
+  Duration: {ch.get('duration_minutes', 0):.0f} minutes
+  Summary: {ch.get('executive_summary', 'N/A')[:300]}
+  Key Takeaways:
+{takeaways_str}
+"""
+
+            prompt = f"""You are a curriculum designer analyzing a complete educational video series.
+
+Series: "{topic_title}"
+Channel: {channel}
+Total Chapters: {len(chapter_summaries)}
+
+Here are the chapter summaries:
+{chapters_text}
+
+Analyze this series and produce a structured curriculum overview. Return your analysis as JSON with this exact format:
+{{
+  "topic_summary": "A 2-3 sentence overview of what this entire series teaches, written as a compelling description for a learner deciding whether to study this material",
+  "learning_objectives": [
+    "Specific, measurable learning objective 1",
+    "Specific, measurable learning objective 2",
+    "...(3-6 objectives)"
+  ],
+  "prerequisites": [
+    "Knowledge or skill needed before starting (if any)",
+    "..."
+  ],
+  "difficulty_level": "beginner|intermediate|advanced|mixed",
+  "estimated_total_time": "Total study time as a human-readable string, e.g. '4 hours 30 minutes'",
+  "chapter_outline": [
+    {{
+      "chapter_number": 1,
+      "title": "Chapter title",
+      "one_liner": "One sentence describing what this chapter covers",
+      "depends_on": []
+    }},
+    {{
+      "chapter_number": 2,
+      "title": "Chapter title",
+      "one_liner": "One sentence describing what this chapter covers",
+      "depends_on": [1]
+    }}
+  ]
+}}
+
+Rules:
+- learning_objectives should be specific and actionable (use verbs like "explain", "implement", "compare", "design")
+- prerequisites should be honest — if no prior knowledge is needed, return an empty array
+- difficulty_level should reflect the OVERALL series difficulty
+- chapter_outline.depends_on lists chapter numbers that should be studied BEFORE this chapter (empty array if independent)
+- Keep topic_summary compelling but honest
+
+Return ONLY valid JSON, no markdown fences."""
+
+            response = self.text_model.generate_content(prompt)
+            result = self._parse_json_response(response.text)
+            
+            if not result:
+                return {
+                    "topic_summary": f"A {len(chapter_summaries)}-part video series from {channel}.",
+                    "learning_objectives": [],
+                    "prerequisites": [],
+                    "difficulty_level": "intermediate",
+                    "estimated_total_time": "",
+                    "chapter_outline": []
+                }
+            
+            return result
+
+        return await asyncio.get_event_loop().run_in_executor(None, _generate)
 
 
 # Singleton instance

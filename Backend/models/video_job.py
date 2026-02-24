@@ -89,6 +89,7 @@ class VideoJob(BaseModel):
     uploaded_video_path: Optional[str] = None  # Path to uploaded video file
     video_name: Optional[str] = None
     user_id: Optional[str] = None  # Clerk user ID
+    topic_id: Optional[str] = None  # Links to Topic._id if part of a playlist
     status: str = "pending"  # pending, downloading, processing, completed, failed
     progress: float = 0.0
     error_message: Optional[str] = None
@@ -169,6 +170,7 @@ class ReportSummary(BaseModel):
     video_name: Optional[str] = None
     status: str
     user_id: Optional[str] = None
+    topic_id: Optional[str] = None  # If part of a playlist topic
     duration: Optional[float] = None
     topics_count: int = 0
     created_at: datetime

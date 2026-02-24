@@ -412,6 +412,7 @@ async def get_reports(
                 job_id=str(job.get("_id")),
                 video_name=job.get("video_name"),
                 status=job.get("status"),
+                topic_id=job.get("topic_id"),
                 duration=job.get("duration"),
                 topics_count=len(job.get("topics", [])),
                 created_at=job.get("created_at"),

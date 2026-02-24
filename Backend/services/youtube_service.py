@@ -101,6 +101,60 @@ class YouTubeService:
                 raise Exception(f"Failed to fetch video info: {str(e)}")
     
     @staticmethod
+    def extract_playlist_info(playlist_url: str) -> dict:
+        """Extract all video metadata from a YouTube playlist without downloading.
+        
+        Args:
+            playlist_url: YouTube playlist URL
+            
+        Returns:
+            Dict with playlist title, description, channel, and list of videos
+        """
+        ydl_opts = {
+            'quiet': False,
+            'no_warnings': False,
+            'extract_flat': 'in_playlist',  # Get metadata only, don't resolve each video
+            'skip_download': True,
+            # NOTE: Do NOT use player_client extractor_args here — those are for
+            # individual video pages and cause "Unable to recognize tab page" on playlists.
+            'http_headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            },
+        }
+        
+        cookies_path = YouTubeService._resolve_cookies_path()
+        if cookies_path:
+            ydl_opts['cookies'] = cookies_path
+        
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            try:
+                info = ydl.extract_info(playlist_url, download=False)
+                
+                entries = info.get('entries', [])
+                videos = []
+                for i, entry in enumerate(entries):
+                    if entry is None:
+                        continue
+                    video_id = entry.get('id', '')
+                    videos.append({
+                        'video_url': f"https://www.youtube.com/watch?v={video_id}",
+                        'video_id': video_id,
+                        'video_title': entry.get('title', f'Video {i+1}'),
+                        'duration': entry.get('duration') or 0,
+                        'order': i
+                    })
+                
+                return {
+                    'title': info.get('title', 'Untitled Playlist'),
+                    'description': info.get('description', ''),
+                    'channel': info.get('uploader', info.get('channel', 'Unknown')),
+                    'video_count': len(videos),
+                    'videos': videos
+                }
+            except Exception as e:
+                raise Exception(f"Failed to extract playlist info: {str(e)}")
+    
+    @staticmethod
     def download_video(
         youtube_url: str,
         output_path: str,

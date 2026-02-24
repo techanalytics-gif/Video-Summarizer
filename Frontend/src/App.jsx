@@ -4,6 +4,8 @@ import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@cl
 import './App.css';
 import Landing from './pages/Landing';
 import Reports from './pages/Reports';
+import Topics from './pages/Topics';
+import TopicDetail from './pages/TopicDetail';
 
 function App() {
   return (
@@ -61,6 +63,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/topics" element={<Topics />} />
+            <Route path="/topics/:topicId" element={<TopicDetail />} />
           </Routes>
         </SignedIn>
       </div>

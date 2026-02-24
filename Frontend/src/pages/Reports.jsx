@@ -51,8 +51,10 @@ const Reports = () => {
       }
 
       const data = await response.json();
-      setReports(data);
-      setTotalReports(data.length);
+      // Filter out playlist-linked videos (view those from Topics page)
+      const standaloneReports = data.filter(r => !r.topic_id);
+      setReports(standaloneReports);
+      setTotalReports(standaloneReports.length);
     } catch (err) {
       setError(err.message);
       setReports([]);

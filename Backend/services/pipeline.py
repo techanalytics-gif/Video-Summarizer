@@ -1,4 +1,5 @@
 import os
+import time
 import asyncio
 from datetime import datetime
 from typing import Dict, Any
@@ -22,7 +23,7 @@ class ProcessingPipeline:
     def __init__(self):
         self.ffmpeg = FFmpegUtils()
     
-    async def process_video(self, job_id: str):
+    async def process_video(self, job_id: str, playlist_context: str = None):
         """
         Main processing pipeline
         
@@ -126,7 +127,8 @@ class ProcessingPipeline:
             transcript_analysis = await gemini_service.analyze_transcript(
                 transcript_text, 
                 duration,
-                video_genre=video_genre
+                video_genre=video_genre,
+                playlist_context=playlist_context
             )
             
             # Filter out ads/sponsorships
@@ -305,7 +307,8 @@ class ProcessingPipeline:
                 transcript_analysis,
                 frame_analyses,
                 duration,
-                video_genre=video_genre
+                video_genre=video_genre,
+                playlist_context=playlist_context
             )
             
             # CRITICAL: Post-synthesis ad cleanup
@@ -490,9 +493,23 @@ class ProcessingPipeline:
             except Exception as e:
                 print(f"Error transcribing chunk {chunk_path}: {e}")
             finally:
-                # Clean up chunk file
-                if os.path.exists(chunk_path):
-                    os.remove(chunk_path)
+                # Clean up chunk file (retry for Windows file locks from Gemini upload)
+                try:
+                    if os.path.exists(chunk_path):
+                        import gc
+                        gc.collect()
+                        for attempt in range(5):
+                            try:
+                                time.sleep(0.5)
+                                os.remove(chunk_path)
+                                break
+                            except (PermissionError, OSError):
+                                if attempt < 4:
+                                    time.sleep(1)
+                                else:
+                                    print(f"Warning: Could not delete {chunk_path} after retries, skipping")
+                except Exception as cleanup_err:
+                    print(f"Warning: Chunk cleanup error (non-fatal): {cleanup_err}")
         
         # Deduplicate overlapping segments
         deduplicated = self._deduplicate_segments(all_segments)
@@ -669,6 +686,7 @@ class ProcessingPipeline:
                 # Find matching frame URL if not present
                 img_url = sub.get("image_url")
                 sub_ts = sub.get("frame_timestamp")
+                matched_fa = None
                 
                 if not img_url and sub_ts is not None:
                     # Find closest frame in frame_analyses
@@ -684,13 +702,40 @@ class ProcessingPipeline:
                     
                     if closest_frame:
                          img_url = closest_frame.get("drive_url")
+                         matched_fa = closest_frame
+                elif img_url:
+                    # Find the fa for this img_url to add to frames later
+                    for fa in frame_analyses:
+                        if fa.get("drive_url") == img_url:
+                            matched_fa = fa
+                            break
                 
+                # Add to sub_topics list
                 sub_topics_instances.append(SubTopic(
                     title=sub.get("title", "Visual Topic"),
                     visual_summary=sub.get("visual_summary", ""),
                     timestamp=sub.get("timestamp", "00:00:00"),
                     image_url=img_url
                 ))
+
+                # ALSO: Ensure this frame is in the main topic_frames list for Topic Covered section
+                if matched_fa:
+                    # Check if already present to avoid duplicates
+                    exists = False
+                    for existing in topic_frames:
+                        if existing.drive_url == matched_fa.get("drive_url"):
+                            exists = True
+                            break
+                    
+                    if not exists:
+                        topic_frames.append(Frame(
+                            timestamp=seconds_to_timestamp(matched_fa.get("timestamp", 0)),
+                            frame_number=len(topic_frames),
+                            drive_url=matched_fa.get("drive_url"),
+                            description=matched_fa.get("description") or matched_fa.get("insights"),
+                            ocr_text=matched_fa.get("ocr_text"),
+                            type=matched_fa.get("type", "slide")
+                        ))
 
             topic = Topic(
                 title=topic_info.get("title", "Untitled"),

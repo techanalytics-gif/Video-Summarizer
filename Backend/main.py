@@ -5,6 +5,7 @@ import os
 
 from models.database import db
 from routes.video_routes import router as video_router
+from routes.topic_routes import router as topic_router
 import config
 
 
@@ -59,6 +60,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(video_router)
+app.include_router(topic_router)
 
 
 @app.get("/")
