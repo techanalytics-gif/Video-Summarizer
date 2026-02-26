@@ -67,10 +67,10 @@ class YouTubeService:
             'quiet': True,
             'no_warnings': True,
             'skip_download': True,
-            # Use tv_embedded client first (works best on servers without cookies)
+            'verbose': True,
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['tv_embedded', 'ios', 'android', 'web']
+                    'player_client': ['ios', 'android', 'web']
                 },
                 'youtubepot-bgutilhttp': {
                     'base_url': 'http://127.0.0.1:4416'
@@ -78,7 +78,7 @@ class YouTubeService:
             },
             # Better headers
             'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             },
         }
         
@@ -118,6 +118,7 @@ class YouTubeService:
             'no_warnings': False,
             'extract_flat': 'in_playlist',  # Get metadata only, don't resolve each video
             'skip_download': True,
+            'verbose': True,
             'extractor_args': {
                 'youtubepot-bgutilhttp': {
                     'base_url': 'http://127.0.0.1:4416'
@@ -208,11 +209,11 @@ class YouTubeService:
             'progress_hooks': [YouTubeService._progress_hook],
             'no_check_certificate': False,
             'prefer_insecure': False,
-            # Client selection will be updated based on cookie availability
+            'verbose': True,  # TEMPORARY: Help us see if the plugin is actually working
             'extractor_args': {
                 'youtube': {
-                    'skip': ['hls'],  # Try to skip HLS if possible
-                    'player_client': ['tv_embedded', 'ios', 'android', 'web']  # tv_embedded works best on servers
+                    'skip': ['hls'],
+                    'player_client': ['ios', 'android', 'web']
                 },
                 'youtubepot-bgutilhttp': {
                     'base_url': 'http://127.0.0.1:4416'
@@ -220,10 +221,9 @@ class YouTubeService:
             },
             # Better headers to mimic real browser
             'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                 'Accept-Language': 'en-us,en;q=0.5',
-                'Sec-Fetch-Mode': 'navigate',
             },
             # Retry on fragment errors
             'fragment_retries': 3,
@@ -231,7 +231,6 @@ class YouTubeService:
         }
         
         # Add cookies if configured (prioritize cookies file for server environments)
-        # Note: cookies_from_browser won't work on servers like Render (no browser installed)
         cookies_configured = False
         cookies_path = YouTubeService._resolve_cookies_path()
         
