@@ -71,6 +71,9 @@ class YouTubeService:
             'extractor_args': {
                 'youtube': {
                     'player_client': ['tv_embedded', 'ios', 'android', 'web']
+                },
+                'youtubepot-bgutilhttp': {
+                    'base_url': 'http://127.0.0.1:4416'
                 }
             },
             # Better headers
@@ -115,8 +118,11 @@ class YouTubeService:
             'no_warnings': False,
             'extract_flat': 'in_playlist',  # Get metadata only, don't resolve each video
             'skip_download': True,
-            # NOTE: Do NOT use player_client extractor_args here — those are for
-            # individual video pages and cause "Unable to recognize tab page" on playlists.
+            'extractor_args': {
+                'youtubepot-bgutilhttp': {
+                    'base_url': 'http://127.0.0.1:4416'
+                }
+            },
             'http_headers': {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             },
@@ -207,6 +213,9 @@ class YouTubeService:
                 'youtube': {
                     'skip': ['hls'],  # Try to skip HLS if possible
                     'player_client': ['tv_embedded', 'ios', 'android', 'web']  # tv_embedded works best on servers
+                },
+                'youtubepot-bgutilhttp': {
+                    'base_url': 'http://127.0.0.1:4416'
                 }
             },
             # Better headers to mimic real browser

@@ -2,9 +2,9 @@
 # Render Start Script
 # Starts the PO Token server in the background, then the Python backend
 
-echo "=== Starting PO Token Server on port 4416 ==="
+echo "=== Starting PO Token Server on localhost:4416 ==="
 cd yt-pot-server/server
-node build/main.js &
+node build/main.js --address 127.0.0.1 &
 POT_PID=$!
 echo "PO Token Server started (PID: $POT_PID)"
 
