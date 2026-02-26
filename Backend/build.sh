@@ -7,9 +7,8 @@ set -e
 echo "=== Installing Python dependencies ==="
 pip install -r requirements.txt
 
-echo "=== Installing Playwright browsers ==="
-playwright install chromium
-playwright install-deps chromium
+echo "=== Installing Playwright browsers (optional) ==="
+playwright install chromium || echo "Playwright browser install failed, continuing..."
 
 echo "=== Setting up PO Token Server (bgutil) ==="
 if [ -d "$HOME/bgutil" ]; then

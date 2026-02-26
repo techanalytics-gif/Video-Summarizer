@@ -430,15 +430,18 @@ class ProcessingPipeline:
                 "video_source": "youtube"
             })
             
-            # Download video using Playwright (primary method as yt-dlp is unreliable)
+            # Download video using yt-dlp + PO Token server (most reliable on Render)
             try:
-                print(f"Downloading YouTube video {video_id} using Playwright strategy...")
-                await playwright_youtube_service.download_video(youtube_url, video_path)
-            except Exception as e:
-                print(f"Playwright download failed: {e}")
-                print("Falling back to yt-dlp...")
-                # Fallback to standard yt-dlp
+                print(f"Downloading YouTube video {video_id} using yt-dlp strategy...")
                 youtube_service.download_video(youtube_url, video_path, video_id)
+            except Exception as e:
+                print(f"yt-dlp download failed: {e}")
+                print("Falling back to Playwright (may fail on Render)...")
+                try:
+                    await playwright_youtube_service.download_video(youtube_url, video_path)
+                except Exception as pe:
+                    print(f"Playwright fallback also failed: {pe}")
+                    raise Exception(f"Failed to download YouTube video: {e}")
             
         else:
             # Download from Google Drive (existing logic)
