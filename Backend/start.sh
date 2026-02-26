@@ -3,7 +3,7 @@
 # Starts the PO Token server in the background, then the Python backend
 
 echo "=== Starting PO Token Server on port 4416 ==="
-cd /opt/render/project/bgutil/server
+cd $HOME/bgutil/server
 node build/main.js &
 POT_PID=$!
 echo "PO Token Server started (PID: $POT_PID)"
@@ -19,6 +19,6 @@ else
 fi
 
 # Return to the backend directory and start the Python app
-cd /opt/render/project/src/Backend
+cd $HOME/src/Backend
 echo "=== Starting Python Backend ==="
 exec python main.py

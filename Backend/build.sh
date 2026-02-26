@@ -12,14 +12,14 @@ playwright install chromium
 playwright install-deps chromium
 
 echo "=== Setting up PO Token Server (bgutil) ==="
-if [ -d "/opt/render/project/bgutil" ]; then
+if [ -d "$HOME/bgutil" ]; then
     echo "bgutil already exists, updating..."
-    cd /opt/render/project/bgutil/server
+    cd $HOME/bgutil/server
     git pull origin 1.2.2 || true
 else
     echo "Cloning bgutil..."
-    git clone --single-branch --branch 1.2.2 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git /opt/render/project/bgutil
-    cd /opt/render/project/bgutil/server
+    git clone --single-branch --branch 1.2.2 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git $HOME/bgutil
+    cd $HOME/bgutil/server
 fi
 
 echo "Installing bgutil Node dependencies..."
