@@ -3,11 +3,22 @@
 # Starts the PO Token server in the background, then the Python backend
 
 echo "=== Starting PO Token Server on port 4416 ==="
-cd yt-pot-server/server
-# Use HOST env var for Node server
-HOST=127.0.0.1 node build/main.js &
-POT_PID=$!
-echo "PO Token Server started (PID: $POT_PID)"
+if [ -d "yt-pot-server/server" ]; then
+    cd yt-pot-server/server
+    echo "Current dir: $(pwd)"
+    if [ -f "build/main.js" ]; then
+        echo "✅ Found build/main.js, starting server..."
+        HOST=127.0.0.1 node build/main.js &
+        POT_PID=$!
+        echo "PO Token Server started (PID: $POT_PID)"
+    else
+        echo "❌ build/main.js NOT FOUND in $(pwd)"
+        echo "Dir content:"
+        ls -R
+    fi
+else
+    echo "❌ yt-pot-server/server directory NOT FOUND!"
+fi
 
 # Wait a moment for the server to be ready
 sleep 5
