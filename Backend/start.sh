@@ -18,7 +18,7 @@ else
     echo "⚠️ PO Token Server failed to start — YouTube downloads may fail"
 fi
 
-# Return to the backend directory and start the Python app
-cd $HOME/src/Backend
+# Return to the code directory and start the Python app
+cd $HOME/src
 echo "=== Starting Python Backend ==="
 exec python main.py
