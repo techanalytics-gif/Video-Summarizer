@@ -41,3 +41,4 @@ tqdm==4.66.1
 
 # Automation
 playwright>=1.40.0
+bgutil-ytdlp-pot-provider
