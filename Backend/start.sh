@@ -20,17 +20,30 @@ else
     echo "❌ yt-pot-server/server directory NOT FOUND!"
 fi
 
-# Wait a moment for the server to be ready
-sleep 5
+# Wait for the server to be ready with a robust retry loop
+echo "Waiting for PO Token Server to initialize (max 40s)..."
+MAX_RETRIES=20
+COUNT=0
+READY=false
 
-# Verify it's answering
-if curl -s http://127.0.0.1:4416/ping > /dev/null; then
-    echo "✅ PO Token Server is responding on http://127.0.0.1:4416"
-else
-    echo "⚠️ PO Token Server not answering yet — check if it crashed"
-    # Try one more check
-    sleep 5
-    curl -v http://127.0.0.1:4416/ping || echo "❌ Server health check failed"
+while [ $COUNT -lt $MAX_RETRIES ]; do
+    if curl -s http://localhost:4416/ping > /dev/null; then
+        echo "✅ PO Token Server is ready and responding on http://localhost:4416"
+        READY=true
+        break
+    fi
+    COUNT=$((COUNT+1))
+    echo "Still waiting ($COUNT/$MAX_RETRIES)..."
+    sleep 2
+done
+
+if [ "$READY" = false ]; then
+    echo "⚠️ PO Token Server health check timed out. Checking PID $POT_PID..."
+    if kill -0 $POT_PID 2>/dev/null; then
+        echo "Server process still exists, continuing anyway..."
+    else
+        echo "❌ Server process died! YouTube downloads will likely fail."
+    fi
 fi
 
 # Return to root and start the Python app

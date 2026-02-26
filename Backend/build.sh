@@ -34,4 +34,8 @@ cd ../..
 echo "=== Fixing line endings for cookies.txt ==="
 sed -i 's/\r$//' utils/cookies.txt || echo "sed failed, continuing..."
 
+# Symlink to satisfy the bgutil plugin's default search path on Render
+echo "=== Creating symlink for bgutil plugin compatibility ==="
+ln -sfn /opt/render/project/src/Backend/yt-pot-server /opt/render/bgutil-ytdlp-pot-provider || echo "Symlink failed, continuing..."
+
 echo "=== Build complete ==="
