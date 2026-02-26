@@ -4,8 +4,8 @@
 
 echo "=== Starting PO Token Server on port 4416 ==="
 cd yt-pot-server/server
-# Node server defaults to all interfaces, but we check localhost specifically
-node build/main.js &
+# Use HOST env var for Node server
+HOST=127.0.0.1 node build/main.js &
 POT_PID=$!
 echo "PO Token Server started (PID: $POT_PID)"
 

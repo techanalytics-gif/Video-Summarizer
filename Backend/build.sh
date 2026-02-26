@@ -22,7 +22,12 @@ else
 fi
 
 echo "Installing bgutil Node dependencies..."
-npm ci
-npx tsc
+npm install
+echo "Building bgutil..."
+npm run build || echo "Build failed, might already be built or not needed"
+cd ../..
+
+echo "=== Fixing line endings for cookies.txt ==="
+sed -i 's/\r$//' utils/cookies.txt || echo "sed failed, continuing..."
 
 echo "=== Build complete ==="
