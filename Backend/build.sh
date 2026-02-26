@@ -11,14 +11,14 @@ echo "=== Installing Playwright browsers (optional) ==="
 playwright install chromium || echo "Playwright browser install failed, continuing..."
 
 echo "=== Setting up PO Token Server (bgutil) ==="
-if [ -d "$HOME/bgutil" ]; then
-    echo "bgutil already exists, updating..."
-    cd $HOME/bgutil/server
+if [ -d "./yt-pot-server" ]; then
+    echo "yt-pot-server already exists, updating..."
+    cd ./yt-pot-server/server
     git pull origin 1.2.2 || true
 else
-    echo "Cloning bgutil..."
-    git clone --single-branch --branch 1.2.2 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git $HOME/bgutil
-    cd $HOME/bgutil/server
+    echo "Cloning bgutil into project directory..."
+    git clone --single-branch --branch 1.2.2 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git ./yt-pot-server
+    cd ./yt-pot-server/server
 fi
 
 echo "Installing bgutil Node dependencies..."

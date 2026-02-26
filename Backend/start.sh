@@ -3,7 +3,7 @@
 # Starts the PO Token server in the background, then the Python backend
 
 echo "=== Starting PO Token Server on port 4416 ==="
-cd $HOME/bgutil/server
+cd yt-pot-server/server
 node build/main.js &
 POT_PID=$!
 echo "PO Token Server started (PID: $POT_PID)"
@@ -18,7 +18,7 @@ else
     echo "⚠️ PO Token Server failed to start — YouTube downloads may fail"
 fi
 
-# Return to the code directory and start the Python app
-cd $HOME/src
+# Return to root and start the Python app
+cd ../..
 echo "=== Starting Python Backend ==="
 exec python main.py
