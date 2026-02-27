@@ -71,14 +71,14 @@ class YouTubeService:
             'extractor_args': {
                 'youtube': {
                     'player_client': ['android', 'ios'],
-                    'getpot_bgutil_baseurl': 'http://127.0.0.1:4416',
+                    'getpot_bgutil_baseurl': ['http://127.0.0.1:4416'],
                     'skip': ['hls', 'dash']
                 },
                 'youtubepot-bgutilhttp': {
-                    'base_url': 'http://127.0.0.1:4416'
+                    'base_url': ['http://127.0.0.1:4416']
                 },
                 'youtubepot-bgutilscript': {
-                    'script_path': '/opt/render/project/src/Backend/yt-pot-server/server/build/generate_once.js'
+                    'script_path': ['/opt/render/project/src/Backend/yt-pot-server/server/build/generate_once.js']
                 }
             },
             'js_runtimes': {'node': {}},
@@ -128,10 +128,10 @@ class YouTubeService:
             'extractor_args': {
                 'youtube': {
                     'player_client': ['android', 'ios'],
-                    'getpot_bgutil_baseurl': 'http://127.0.0.1:4416'
+                    'getpot_bgutil_baseurl': ['http://127.0.0.1:4416']
                 },
                 'youtubepot-bgutilhttp': {
-                    'base_url': 'http://127.0.0.1:4416'
+                    'base_url': ['http://127.0.0.1:4416']
                 }
             },
             'js_runtimes': {'node': {}},
@@ -224,13 +224,13 @@ class YouTubeService:
                 'youtube': {
                     'skip': ['hls', 'dash'],
                     'player_client': ['android', 'ios'],
-                    'getpot_bgutil_baseurl': 'http://127.0.0.1:4416'
+                    'getpot_bgutil_baseurl': ['http://127.0.0.1:4416']
                 },
                 'youtubepot-bgutilhttp': {
-                    'base_url': 'http://127.0.0.1:4416'
+                    'base_url': ['http://127.0.0.1:4416']
                 },
                 'youtubepot-bgutilscript': {
-                    'script_path': '/opt/render/project/src/Backend/yt-pot-server/server/build/generate_once.js'
+                    'script_path': ['/opt/render/project/src/Backend/yt-pot-server/server/build/generate_once.js']
                 }
             },
             'js_runtimes': {'node': {}},

@@ -8,8 +8,8 @@ if [ -d "yt-pot-server/server" ]; then
     echo "Current dir: $(pwd)"
     if [ -f "build/main.js" ]; then
         echo "✅ Found build/main.js, starting server..."
-        # HOST env var binds to IPv4 loopback; --port sets the port
-        HOST=127.0.0.1 node build/main.js --port 4416 &
+        # Use only env vars — CLI flags may not be supported
+        PORT=4416 HOST=127.0.0.1 node build/main.js &
         POT_PID=$!
         echo "PO Token Server started (PID: $POT_PID) on 127.0.0.1:4416"
     else
@@ -27,7 +27,7 @@ COUNT=0
 READY=false
 
 while [ $COUNT -lt $MAX_RETRIES ]; do
-    if curl -s http://localhost:4416/ping > /dev/null; then
+    if curl -s http://127.0.0.1:4416/ping > /dev/null; then
         echo "✅ PO Token Server is ready and responding on http://localhost:4416"
         READY=true
         break
