@@ -20,6 +20,8 @@ const Landing = () => {
   const [viewingPastReport, setViewingPastReport] = useState(false);
   const [videoSource, setVideoSource] = useState('auto'); // 'auto', 'drive', 'youtube', 'upload'
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [currentAction, setCurrentAction] = useState('');
+  const [logs, setLogs] = useState([]);
 
   // Detect video source from URL
   const detectVideoSource = (url) => {
@@ -198,6 +200,8 @@ const Landing = () => {
       const data = await resp.json();
       setStatus(data.status);
       setProgress(data.progress || 0);
+      setCurrentAction(data.current_action || '');
+      setLogs(data.processing_logs || []);
 
       if (data.status === 'completed') {
         setPolling(false);
@@ -579,9 +583,60 @@ const Landing = () => {
           {error && <div className="error">{error}</div>}
 
           {(status !== 'idle' && status !== 'failed') && (
-            <div className="progress">
-              <div className="progress-bar" style={{ width: `${Math.round(progress * 100)}%` }} />
-              <div className="progress-label">{Math.round(progress * 100)}%</div>
+            <div style={{ marginTop: '20px' }}>
+              <div className="progress">
+                <div className="progress-bar" style={{ width: `${Math.round(progress * 100)}%` }} />
+                <div className="progress-label">{Math.round(progress * 100)}%</div>
+              </div>
+              
+              {/* User-Centric Processing Logs */}
+              <div style={{ 
+                marginTop: '15px', 
+                padding: '15px', 
+                backgroundColor: 'rgba(255,255,255,0.03)', 
+                borderRadius: '10px',
+                border: '1px solid rgba(255,255,255,0.05)'
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '10px', 
+                  marginBottom: '10px' 
+                }}>
+                  <div className="loading-spinner-small" style={{ 
+                    width: '12px', 
+                    height: '12px', 
+                    border: '2px solid rgba(59,130,246,0.3)', 
+                    borderTopColor: '#3b82f6', 
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#e0e7ff' }}>
+                    {currentAction || 'Initializing AI pipeline...'}
+                  </span>
+                </div>
+                
+                {logs.length > 0 && (
+                  <div style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: '6px',
+                    opacity: 0.7 
+                  }}>
+                    {logs.slice(-3).reverse().map((log, i) => (
+                      <div key={i} style={{ 
+                        fontSize: '12px', 
+                        color: '#9ca3af',
+                        display: 'flex',
+                        gap: '8px'
+                      }}>
+                        <span style={{ color: '#3b82f6' }}>•</span>
+                        <span>{log.message}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </form>

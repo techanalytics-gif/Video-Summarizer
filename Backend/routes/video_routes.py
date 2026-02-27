@@ -214,6 +214,8 @@ async def get_job_status(job_id: str):
             status=job.get("status", "unknown"),
             progress=job.get("progress", 0.0),
             video_name=job.get("video_name"),
+            current_action=job.get("current_action", ""),
+            processing_logs=job.get("processing_logs", []),
             created_at=job.get("created_at", datetime.utcnow())
         )
         

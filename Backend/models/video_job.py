@@ -113,6 +113,10 @@ class VideoJob(BaseModel):
     genre_confidence: Optional[float] = None
     genre_reason: Optional[str] = None
     
+    # User-centric logging
+    current_action: str = "" # Latest friendly status message
+    processing_logs: List[Dict[str, Any]] = [] # History of friendly logs
+    
     # Report/Synthesis (stored for easy retrieval)
     report: Dict[str, Any] = {}  # Full synthesis result
     
@@ -136,6 +140,8 @@ class VideoJobResponse(BaseModel):
     status: str
     progress: float
     video_name: Optional[str] = None
+    current_action: str = ""
+    processing_logs: List[Dict[str, Any]] = []
     created_at: datetime
     
     class Config:

@@ -13,14 +13,16 @@ from google_auth_httplib2 import AuthorizedHttp
 import config
 
 
+import threading
+
 class GoogleDriveService:
     def __init__(self):
         self.creds = None
-        self.service = None
+        self._local = threading.local()
         self._authenticate()
     
     def _authenticate(self):
-        """Authenticate using refresh token"""
+        """Authenticate and store credentials"""
         self.creds = Credentials(
             token=None,
             refresh_token=config.REFRESH_TOKEN,
@@ -29,16 +31,27 @@ class GoogleDriveService:
             client_secret=config.CLIENT_SECRET,
         )
         
-        # Refresh the token
+        # Refresh the token if expired
         if self.creds and self.creds.expired and self.creds.refresh_token:
             self.creds.refresh(Request())
-        
-        # Create an authorized http object with a higher timeout to avoid read timeouts
-        # Default timeout is often too short for slower connections or large files
-        http = httplib2.Http(timeout=600)  # 10 minutes timeout
-        authorized_http = AuthorizedHttp(self.creds, http=http)
-        
-        self.service = build('drive', 'v3', http=authorized_http)
+
+    @property
+    def service(self):
+        """Get or create a thread-local Drive service instance"""
+        if not hasattr(self._local, 'service'):
+            # Refresh creds if needed before building
+            if self.creds.expired:
+                self.creds.refresh(Request())
+                
+            # Create a NEW http object for this thread (httplib2 is NOT thread-safe)
+            http = httplib2.Http(timeout=600)
+            authorized_http = AuthorizedHttp(self.creds, http=http)
+            
+            # build() is also slow, so we use static discovery to speed it up if possible
+            # but for now, the priority is thread-safety
+            self._local.service = build('drive', 'v3', http=authorized_http, cache_discovery=False)
+            
+        return self._local.service
     
     def extract_file_id(self, drive_url: str) -> str:
         """Extract file ID from Google Drive URL"""

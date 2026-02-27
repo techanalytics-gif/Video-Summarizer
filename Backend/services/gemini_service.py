@@ -51,7 +51,7 @@ class GeminiService:
     def __init__(self):
         self.model_name = config.MODEL
         self.text_model = genai.GenerativeModel(self.model_name)
-        # Use gemini-2.5-flash for Vision (higher quota limits)
+        # Use gemini-1.5-flash for Vision (higher quota limits)
         self.vision_model = genai.GenerativeModel('gemini-2.5-flash')
         
         # Genre mapping for fuzzy matching
@@ -264,7 +264,7 @@ Return ONLY valid JSON:
             return {"genre": genre, "confidence": float(confidence), "reason": reason}
 
         try:
-            return retry_with_backoff(_classify, max_retries=2, initial_delay=1) or {
+            return await asyncio.to_thread(retry_with_backoff, _classify, 2, 1) or {
                 "genre": "unknown",
                 "confidence": 0.0,
                 "reason": "",
@@ -330,7 +330,7 @@ If no cues are found, return an empty list.
             return result.get("visual_cues", []) if result else []
 
         try:
-            return retry_with_backoff(_scout, max_retries=2)
+            return await asyncio.to_thread(retry_with_backoff, _scout, 2)
         except Exception as e:
             print(f"Audio Cue Scout failed: {e}")
             return []
@@ -378,7 +378,7 @@ Return JSON:
             return result
 
         try:
-            return retry_with_backoff(_gatekeep, max_retries=2)
+            return await asyncio.to_thread(retry_with_backoff, _gatekeep, 2)
         except Exception as e:
             print(f"Gatekeeper analysis failed for {frame_path}: {e}")
             return {
@@ -452,7 +452,7 @@ Return JSON:
             return segments
         
         try:
-            return retry_with_backoff(_transcribe, max_retries=3)
+            return await asyncio.to_thread(retry_with_backoff, _transcribe, 3)
         except Exception as e:
             print(f"Error transcribing audio after retries: {e}")
             # Fallback: simple transcription without timestamps
@@ -678,7 +678,7 @@ Return JSON:
             return result or {}
         
         try:
-            return retry_with_backoff(_analyze, max_retries=3)
+            return await asyncio.to_thread(retry_with_backoff, _analyze, 3)
         except Exception as e:
             print(f"Error analyzing transcript after retries: {e}")
             return {}
@@ -780,7 +780,7 @@ Return JSON:
             return analyses
         
         try:
-            return retry_with_backoff(_analyze, max_retries=3)
+            return await asyncio.to_thread(retry_with_backoff, _analyze, 3)
         except Exception as e:
             print(f"Error analyzing frame batch after retries: {e}")
             # Return placeholder results
@@ -794,7 +794,7 @@ Return JSON:
     
     async def analyze_frame_clusters(self, clusters: List[Dict]) -> List[Dict]:
         """
-        Analyze clusters of frames to select hero frame and extract topic.
+        Analyze clusters of frames to select hero frame and extract topic in parallel.
         
         Args:
             clusters: List of clusters from ImageProcessor
@@ -803,87 +803,92 @@ Return JSON:
             List of visual subtopics (title, summary, hero_frame_path)
         """
         results = []
+        cluster_sem = asyncio.Semaphore(4) # Limit concurrent Vision calls
         
-        print(f"Analyzing {len(clusters)} visual clusters with Gemini Vision...")
+        print(f"⚡ Analyzing {len(clusters)} visual clusters with Gemini Vision in parallel...")
         
-        for i, cluster in enumerate(clusters):
-            # Limit candidates to top 5 sharpest frames
-            candidates = cluster.get('candidates', [])[:5] 
-            frame_paths = [c['path'] for c in candidates]
-            
-            # Prepare images
-            image_parts = []
-            valid_candidates = []
-            
-            for idx, path in enumerate(frame_paths):
+        async def analyze_single(i, cluster):
+            async with cluster_sem:
+                # Limit candidates to top 5 sharpest frames
+                candidates = cluster.get('candidates', [])[:5] 
+                frame_paths = [c['path'] for c in candidates]
+                
+                # Prepare images
+                image_parts = []
+                valid_candidates = []
+                
+                for idx, path in enumerate(frame_paths):
+                    try:
+                        img = Image.open(path)
+                        if img.mode != 'RGB':
+                            img = img.convert('RGB')
+                        image_parts.append(img)
+                        valid_candidates.append(candidates[idx])
+                    except:
+                        continue
+                
+                if not image_parts:
+                    return None
+                
+                # Use timestamps for context
+                start_ts = seconds_to_timestamp(cluster.get('start_time', 0))
+                end_ts = seconds_to_timestamp(cluster.get('end_time', 0))
+                    
+                prompt = f"""
+                I am providing you with {len(image_parts)} frames captured within a processing window from {start_ts} to {end_ts}. These likely represent the same slide or visual element, potentially with slight animations or cursor movements.
+                
+                Task 1: Select the "Hero Frame". This is the frame that is most focused, least blurry, and contains the most complete information (e.g., the full list is revealed, or the slide build is complete).
+                Task 2: Extract the title or main heading from that frame.
+                Task 3: Summarize the specific data or concept shown in that frame (do not summarize the audio, only what is VISIBLE).
+
+                Return JSON:
+                {{
+                  "hero_frame_index": 0, // The index of the selected best image (0 to {len(image_parts)-1})
+                  "sub_topic_title": "Slide Title",
+                  "visual_summary": "Description of the visual content (chart trends, code purpose, diagram flow)",
+                  "ocr_keywords": ["keyword1", "keyword2"]
+                }}
+                """
+                
+                def _do_vision():
+                    content = [prompt] + image_parts
+                    response = self.vision_model.generate_content(content)
+                    return self._parse_json_response(response.text)
+
                 try:
-                    img = Image.open(path)
-                    if img.mode != 'RGB':
-                        img = img.convert('RGB')
-                    image_parts.append(img)
-                    valid_candidates.append(candidates[idx])
-                except:
-                    continue
-            
-            if not image_parts:
-                continue
-            
-            # Use timestamps for context
-            start_ts = seconds_to_timestamp(cluster.get('start_time', 0))
-            end_ts = seconds_to_timestamp(cluster.get('end_time', 0))
-                
-            prompt = f"""
-            I am providing you with {len(image_parts)} frames captured within a processing window from {start_ts} to {end_ts}. These likely represent the same slide or visual element, potentially with slight animations or cursor movements.
-            
-            Task 1: Select the "Hero Frame". This is the frame that is most focused, least blurry, and contains the most complete information (e.g., the full list is revealed, or the slide build is complete).
-            Task 2: Extract the title or main heading from that frame.
-            Task 3: Summarize the specific data or concept shown in that frame (do not summarize the audio, only what is VISIBLE).
-
-            Return JSON:
-            {{
-              "hero_frame_index": 0, // The index of the selected best image (0 to {len(image_parts)-1})
-              "sub_topic_title": "Slide Title",
-              "visual_summary": "Description of the visual content (chart trends, code purpose, diagram flow)",
-              "ocr_keywords": ["keyword1", "keyword2"]
-            }}
-            """
-            
-            def _analyze_single_cluster():
-                # print(f"Analyzing cluster {i+1}/{len(clusters)} with {len(image_parts)} frames...")
-                content = [prompt] + image_parts
-                response = self.vision_model.generate_content(content)
-                return self._parse_json_response(response.text)
-
-            try:
-                # Use retry logic for robustness
-                parsed = retry_with_backoff(_analyze_single_cluster, max_retries=2, initial_delay=1)
-                
-                if parsed:
-                    idx = parsed.get("hero_frame_index", 0)
-                    # Validate index
-                    if not isinstance(idx, int) or idx < 0 or idx >= len(valid_candidates):
-                        idx = 0
+                    # Use thread for blocking retry/vision call
+                    parsed = await asyncio.to_thread(retry_with_backoff, _do_vision, 2, 1)
+                    
+                    if parsed:
+                        idx = parsed.get("hero_frame_index", 0)
+                        if not isinstance(idx, int) or idx < 0 or idx >= len(valid_candidates):
+                            idx = 0
+                            
+                        hero_frame = valid_candidates[idx]
                         
-                    hero_frame = valid_candidates[idx]
-                    
-                    results.append({
-                        "timestamp": hero_frame['timestamp'],
-                        "hero_frame_path": hero_frame['path'],
-                        "sub_topic_title": parsed.get("sub_topic_title", "Visual Topic"),
-                        "visual_summary": parsed.get("visual_summary", ""),
-                        "ocr_keywords": parsed.get("ocr_keywords", []),
-                        "frame_count": cluster.get('frame_count', 1),
-                        "cluster_idx": i
-                    })
-                    print(f"Cluster {i+1}/{len(clusters)}: Hero Frame Selected (Index {idx}). Title: {parsed.get('sub_topic_title')}")
-                else:
-                    print(f"Cluster {i+1}: Failed to parse response")
-                    
-            except Exception as e:
-                print(f"Error analyzing cluster {i+1}: {e}")
-                continue
-                
+                        print(f"  Cluster {i+1}/{len(clusters)}: Hero Frame Selected (Index {idx}). Title: {parsed.get('sub_topic_title')}")
+                        return {
+                            "timestamp": hero_frame['timestamp'],
+                            "hero_frame_path": hero_frame['path'],
+                            "sub_topic_title": parsed.get("sub_topic_title", "Visual Topic"),
+                            "visual_summary": parsed.get("visual_summary", ""),
+                            "ocr_keywords": parsed.get("ocr_keywords", []),
+                            "frame_count": cluster.get('frame_count', 1),
+                            "cluster_idx": i
+                        }
+                except Exception as e:
+                    print(f"Error analyzing cluster {i+1}: {e}")
+                return None
+
+        tasks = [analyze_single(i, c) for i, c in enumerate(clusters)]
+        gather_results = await asyncio.gather(*tasks)
+        
+        # Filter Nones and sort by cluster index to preserve order
+        results = [r for r in gather_results if r is not None]
+        results.sort(key=lambda x: x['cluster_idx'])
+            
         return results
+
 
     async def map_visuals_to_topics(
         self,
@@ -949,7 +954,7 @@ Return JSON:
             return self._parse_json_response(response.text)
             
         try:
-            mapped_result = retry_with_backoff(_map_topics, max_retries=2)
+            mapped_result = await asyncio.to_thread(retry_with_backoff, _map_topics, 2)
             
             if mapped_result and "topics" in mapped_result:
                 # Merge logic
@@ -1119,7 +1124,7 @@ Return JSON:
             }
         
         try:
-            return retry_with_backoff(_synthesize, max_retries=2)
+            return await asyncio.to_thread(retry_with_backoff, _synthesize, 2)
         except Exception as e:
             print(f"Error synthesizing results: {e}")
             # Return fallback with ALL original topics from analysis
@@ -1215,7 +1220,7 @@ Generate exactly 5 slides."""
             return self._parse_json_response(response.text)
         
         try:
-            result = retry_with_backoff(_generate, max_retries=2)
+            result = await asyncio.to_thread(retry_with_backoff, _generate, 2)
             
             if result and "slides" in result:
                 slides = result["slides"][:5]  # Ensure max 5
