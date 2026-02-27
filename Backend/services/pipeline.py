@@ -170,8 +170,8 @@ class ProcessingPipeline:
             useful_frames = []
             visual_rois = []
             
-            # Semaphore to limit concurrent Gemini Vision calls (lower for Render stability)
-            gate_sem = asyncio.Semaphore(2)
+            # Semaphore to limit concurrent Gemini Vision calls (tuned in config.py)
+            gate_sem = asyncio.Semaphore(config.MAX_CONCURRENT_VISION_TASKS)
             
             async def evaluate_single_frame(index, frame_path, timestamp):
                 """Evaluate a single frame with concurrency control"""
@@ -303,7 +303,7 @@ class ProcessingPipeline:
             # We map "visual_subtopics" (Phase 3 result) to "frame_analyses" (Phase 1 structure)
             # Upload hero frames in parallel for speed
             print(f"⚡ Uploading {len(visual_subtopics)} hero frames to Drive in parallel...")
-            upload_sem = asyncio.Semaphore(3)
+            upload_sem = asyncio.Semaphore(config.MAX_CONCURRENT_UPLOADS)
             
             async def upload_single_frame(index, item):
                 """Upload a single hero frame to Drive with concurrency control"""
@@ -550,8 +550,8 @@ class ProcessingPipeline:
         # Split audio into chunks
         chunks = self.ffmpeg.split_audio(audio_path)
         
-        # Semaphore to limit concurrent Gemini API calls (lower to prevent Render OOM)
-        sem = asyncio.Semaphore(2)
+        # Semaphore to limit concurrent Gemini API calls (tuned in config.py)
+        sem = asyncio.Semaphore(config.MAX_CONCURRENT_TRANSCRIBES)
         
         async def transcribe_chunk(chunk_path, start_time):
             """Transcribe a single chunk with concurrency control"""
