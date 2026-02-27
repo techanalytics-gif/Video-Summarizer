@@ -81,7 +81,7 @@ class YouTubeService:
                     'script_path': '/opt/render/project/src/Backend/yt-pot-server/server/build/generate_once.js'
                 }
             },
-            'js_runtimes': ['node'],
+            'js_runtimes': {'node': {}},
             'http_headers': {
                 'User-Agent': 'com.google.android.youtube/19.05.36 (Linux; U; Android 14; en_US; Pixel 8 Pro) Version/19.05.36',
                 'Accept': '*/*',
@@ -134,7 +134,7 @@ class YouTubeService:
                     'base_url': 'http://127.0.0.1:4416'
                 }
             },
-            'js_runtimes': ['node'],
+            'js_runtimes': {'node': {}},
             'http_headers': {
                 'User-Agent': 'com.google.android.youtube/19.05.36 (Linux; U; Android 14; en_US; Pixel 8 Pro) Version/19.05.36',
             },
@@ -233,7 +233,7 @@ class YouTubeService:
                     'script_path': '/opt/render/project/src/Backend/yt-pot-server/server/build/generate_once.js'
                 }
             },
-            'js_runtimes': ['node'],
+            'js_runtimes': {'node': {}},
             'http_headers': {
                 'User-Agent': 'com.google.android.youtube/19.05.36 (Linux; U; Android 14; en_US; Pixel 8 Pro) Version/19.05.36',
                 'Accept': '*/*',
