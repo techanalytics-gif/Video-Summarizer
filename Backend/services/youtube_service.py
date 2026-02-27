@@ -70,13 +70,13 @@ class YouTubeService:
             'verbose': True,
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['ios', 'android', 'web']
+                    'player_client': ['web', 'web_embedded', 'ios', 'android'],
+                    'getpot_bgutil_baseurl': 'http://localhost:4416' # Fallback
                 },
                 'youtubepot-bgutilhttp': {
-                    'base_url': 'http://127.0.0.1:4416'
+                    'base_url': 'http://localhost:4416'
                 }
             },
-            # Better headers
             'http_headers': {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -122,8 +122,12 @@ class YouTubeService:
             'skip_download': True,
             'verbose': True,
             'extractor_args': {
+                'youtube': {
+                    'player_client': ['web', 'web_embedded'],
+                    'getpot_bgutil_baseurl': 'http://localhost:4416' # Fallback
+                },
                 'youtubepot-bgutilhttp': {
-                    'base_url': 'http://127.0.0.1:4416'
+                    'base_url': 'http://localhost:4416'
                 }
             },
             'http_headers': {
@@ -202,7 +206,6 @@ class YouTubeService:
             'best'
         ]
         
-        # Build yt-dlp options with cookie support
         ydl_opts = {
             'format': format_selectors[0],  # Start with best MP4
             'outtmpl': base_output_path + '.%(ext)s',  # yt-dlp will add extension
@@ -215,10 +218,11 @@ class YouTubeService:
             'extractor_args': {
                 'youtube': {
                     'skip': ['hls'],
-                    'player_client': ['ios', 'android', 'web']
+                    'player_client': ['web', 'web_embedded', 'ios', 'android'],
+                    'getpot_bgutil_baseurl': 'http://localhost:4416' # Fallback
                 },
                 'youtubepot-bgutilhttp': {
-                    'base_url': 'http://127.0.0.1:4416'
+                    'base_url': 'http://localhost:4416'
                 }
             },
             # Better headers to mimic real browser
