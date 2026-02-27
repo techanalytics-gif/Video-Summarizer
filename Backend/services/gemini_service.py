@@ -803,7 +803,7 @@ Return JSON:
             List of visual subtopics (title, summary, hero_frame_path)
         """
         results = []
-        cluster_sem = asyncio.Semaphore(4) # Limit concurrent Vision calls
+        cluster_sem = asyncio.Semaphore(2) # Limit concurrent Vision calls (more stable)
         
         print(f"⚡ Analyzing {len(clusters)} visual clusters with Gemini Vision in parallel...")
         

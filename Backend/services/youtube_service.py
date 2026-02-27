@@ -69,7 +69,7 @@ class YouTubeService:
             'quiet': True,
             'no_warnings': True,
             'skip_download': True,
-            'verbose': True,
+            'verbose': False,
         }
         
         if proxy_url:
@@ -110,11 +110,11 @@ class YouTubeService:
         proxy_url = os.getenv('PROXY_URL')
         
         ydl_opts = {
-            'quiet': False,
-            'no_warnings': False,
+            'quiet': True,
+            'no_warnings': True,
             'extract_flat': 'in_playlist',  # Get metadata only, don't resolve each video
             'skip_download': True,
-            'verbose': True,
+            'verbose': False,
         }
         
         if proxy_url:
@@ -197,12 +197,12 @@ class YouTubeService:
         ydl_opts = {
             'format': format_selectors[0],  # Start with best MP4
             'outtmpl': base_output_path + '.%(ext)s',  # yt-dlp will add extension
-            'quiet': False,
-            'no_warnings': False,
+            'quiet': True,
+            'no_warnings': True,
             'progress_hooks': [YouTubeService._progress_hook],
             'no_check_certificate': False,
             'prefer_insecure': False,
-            'verbose': True,
+            'verbose': False,
             'fragment_retries': 3,
             'retries': 3,
         }
@@ -313,11 +313,16 @@ class YouTubeService:
     def _progress_hook(d):
         """Progress hook for yt-dlp download"""
         if d['status'] == 'downloading':
-            percent = d.get('_percent_str', 'N/A')
-            speed = d.get('_speed_str', 'N/A')
-            # Print progress (can be improved with logging)
-            if percent != 'N/A':
-                print(f"Download progress: {percent} at {speed}")
+            p = d.get('downloaded_bytes', 0)
+            t = d.get('total_bytes') or d.get('total_bytes_estimate')
+            if t:
+                percent = int((p / t) * 100)
+                # Only log every 10% and avoid double logging same %
+                last_p = getattr(YouTubeService, '_last_percent', -1)
+                if percent % 10 == 0 and percent != last_p:
+                    YouTubeService._last_percent = percent
+                    speed = d.get('_speed_str', 'N/A')
+                    print(f"Download Progress: {percent}% at {speed}")
         elif d['status'] == 'finished':
             print(f"Download complete: {d['filename']}")
 

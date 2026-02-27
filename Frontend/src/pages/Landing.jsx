@@ -56,7 +56,7 @@ const Landing = () => {
   useEffect(() => {
     let interval;
     if (jobId && polling && !viewingPastReport) {
-      interval = setInterval(() => pollStatus(jobId), 5000);
+      interval = setInterval(() => pollStatus(jobId), 8000);
       pollStatus(jobId); // immediate poll
     }
     return () => {
