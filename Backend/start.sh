@@ -8,10 +8,10 @@ if [ -d "yt-pot-server/server" ]; then
     echo "Current dir: $(pwd)"
     if [ -f "build/main.js" ]; then
         echo "✅ Found build/main.js, starting server..."
-        # We explicitly set PORT=4416 so it doesn't steal the main Render port
-        PORT=4416 HOST=127.0.0.1 node build/main.js &
+        # We explicitly set PORT and HOST flags to ensure strictly internal binding
+        node build/main.js --port 4416 --host 127.0.0.1 &
         POT_PID=$!
-        echo "PO Token Server started (PID: $POT_PID) on port 4416"
+        echo "PO Token Server started (PID: $POT_PID) on 127.0.0.1:4416"
     else
         echo "❌ build/main.js NOT FOUND! Check build logs."
         ls -R

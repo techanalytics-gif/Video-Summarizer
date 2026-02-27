@@ -70,11 +70,11 @@ class YouTubeService:
             'verbose': True,
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['web', 'web_embedded', 'ios', 'android'],
-                    'getpot_bgutil_baseurl': 'http://localhost:4416' # Fallback
+                    'player_client': ['tv', 'web_embedded', 'ios', 'android'],
+                    'getpot_bgutil_baseurl': 'http://127.0.0.1:4416'
                 },
                 'youtubepot-bgutilhttp': {
-                    'base_url': 'http://localhost:4416'
+                    'base_url': 'http://127.0.0.1:4416'
                 }
             },
             'http_headers': {
@@ -123,11 +123,11 @@ class YouTubeService:
             'verbose': True,
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['web', 'web_embedded'],
-                    'getpot_bgutil_baseurl': 'http://localhost:4416' # Fallback
+                    'player_client': ['tv', 'web_embedded'],
+                    'getpot_bgutil_baseurl': 'http://127.0.0.1:4416'
                 },
                 'youtubepot-bgutilhttp': {
-                    'base_url': 'http://localhost:4416'
+                    'base_url': 'http://127.0.0.1:4416'
                 }
             },
             'http_headers': {
@@ -218,11 +218,11 @@ class YouTubeService:
             'extractor_args': {
                 'youtube': {
                     'skip': ['hls'],
-                    'player_client': ['web', 'web_embedded', 'ios', 'android'],
-                    'getpot_bgutil_baseurl': 'http://localhost:4416' # Fallback
+                    'player_client': ['tv', 'web_embedded', 'ios', 'android'],
+                    'getpot_bgutil_baseurl': 'http://127.0.0.1:4416'
                 },
                 'youtubepot-bgutilhttp': {
-                    'base_url': 'http://localhost:4416'
+                    'base_url': 'http://127.0.0.1:4416'
                 }
             },
             # Better headers to mimic real browser
