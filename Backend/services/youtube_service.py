@@ -70,18 +70,11 @@ class YouTubeService:
             'verbose': True,
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['android', 'ios'],
-                    'getpot_bgutil_baseurl': ['http://127.0.0.1:4416'],
-                    'skip': ['hls', 'dash']
+                    'player_client': ['web'],
                 },
                 'youtubepot-bgutilhttp': {
                     'base_url': ['http://127.0.0.1:4416']
                 }
-            },
-            'js_runtimes': {'node': {}},
-            'http_headers': {
-                'User-Agent': 'com.google.android.youtube/19.05.36 (Linux; U; Android 14; en_US; Pixel 8 Pro) Version/19.05.36',
-                'Accept': '*/*',
             },
         }
         
@@ -124,16 +117,11 @@ class YouTubeService:
             'verbose': True,
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['android', 'ios'],
-                    'getpot_bgutil_baseurl': ['http://127.0.0.1:4416']
+                    'player_client': ['web'],
                 },
                 'youtubepot-bgutilhttp': {
                     'base_url': ['http://127.0.0.1:4416']
                 }
-            },
-            'js_runtimes': {'node': {}},
-            'http_headers': {
-                'User-Agent': 'com.google.android.youtube/19.05.36 (Linux; U; Android 14; en_US; Pixel 8 Pro) Version/19.05.36',
             },
         }
         
@@ -219,18 +207,11 @@ class YouTubeService:
             'verbose': True,
             'extractor_args': {
                 'youtube': {
-                    'skip': ['hls', 'dash'],
-                    'player_client': ['android', 'ios'],
-                    'getpot_bgutil_baseurl': ['http://127.0.0.1:4416']
+                    'player_client': ['web'],
                 },
                 'youtubepot-bgutilhttp': {
                     'base_url': ['http://127.0.0.1:4416']
                 }
-            },
-            'js_runtimes': {'node': {}},
-            'http_headers': {
-                'User-Agent': 'com.google.android.youtube/19.05.36 (Linux; U; Android 14; en_US; Pixel 8 Pro) Version/19.05.36',
-                'Accept': '*/*',
             },
             # Retry on fragment errors
             'fragment_retries': 3,
