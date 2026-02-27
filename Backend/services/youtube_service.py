@@ -70,17 +70,21 @@ class YouTubeService:
             'verbose': True,
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['tv', 'web_embedded', 'ios', 'android'],
-                    'getpot_bgutil_baseurl': 'http://127.0.0.1:4416'
+                    'player_client': ['android', 'ios'],
+                    'getpot_bgutil_baseurl': 'http://127.0.0.1:4416',
+                    'skip': ['hls', 'dash']
                 },
                 'youtubepot-bgutilhttp': {
                     'base_url': 'http://127.0.0.1:4416'
+                },
+                'youtubepot-bgutilscript': {
+                    'script_path': '/opt/render/project/src/Backend/yt-pot-server/server/build/generate_once.js'
                 }
             },
+            'js_runtimes': ['node'],
             'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                'Accept-Language': 'en-us,en;q=0.5',
+                'User-Agent': 'com.google.android.youtube/19.05.36 (Linux; U; Android 14; en_US; Pixel 8 Pro) Version/19.05.36',
+                'Accept': '*/*',
             },
         }
         
@@ -123,15 +127,16 @@ class YouTubeService:
             'verbose': True,
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['tv', 'web_embedded'],
+                    'player_client': ['android', 'ios'],
                     'getpot_bgutil_baseurl': 'http://127.0.0.1:4416'
                 },
                 'youtubepot-bgutilhttp': {
                     'base_url': 'http://127.0.0.1:4416'
                 }
             },
+            'js_runtimes': ['node'],
             'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'User-Agent': 'com.google.android.youtube/19.05.36 (Linux; U; Android 14; en_US; Pixel 8 Pro) Version/19.05.36',
             },
         }
         
@@ -214,22 +219,24 @@ class YouTubeService:
             'progress_hooks': [YouTubeService._progress_hook],
             'no_check_certificate': False,
             'prefer_insecure': False,
-            'verbose': True,  # TEMPORARY: Help us see if the plugin is actually working
+            'verbose': True,
             'extractor_args': {
                 'youtube': {
-                    'skip': ['hls'],
-                    'player_client': ['tv', 'web_embedded', 'ios', 'android'],
+                    'skip': ['hls', 'dash'],
+                    'player_client': ['android', 'ios'],
                     'getpot_bgutil_baseurl': 'http://127.0.0.1:4416'
                 },
                 'youtubepot-bgutilhttp': {
                     'base_url': 'http://127.0.0.1:4416'
+                },
+                'youtubepot-bgutilscript': {
+                    'script_path': '/opt/render/project/src/Backend/yt-pot-server/server/build/generate_once.js'
                 }
             },
-            # Better headers to mimic real browser
+            'js_runtimes': ['node'],
             'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                'Accept-Language': 'en-us,en;q=0.5',
+                'User-Agent': 'com.google.android.youtube/19.05.36 (Linux; U; Android 14; en_US; Pixel 8 Pro) Version/19.05.36',
+                'Accept': '*/*',
             },
             # Retry on fragment errors
             'fragment_retries': 3,
