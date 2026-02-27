@@ -63,20 +63,18 @@ class YouTubeService:
     @staticmethod
     def get_video_info(video_id: str) -> dict:
         """Get video metadata without downloading"""
+        proxy_url = os.getenv('PROXY_URL')
+        
         ydl_opts = {
             'quiet': True,
             'no_warnings': True,
             'skip_download': True,
             'verbose': True,
-            'extractor_args': {
-                'youtube': {
-                    'player_client': ['web'],
-                },
-                'youtubepot-bgutilhttp': {
-                    'base_url': ['http://127.0.0.1:4416']
-                }
-            },
         }
+        
+        if proxy_url:
+            ydl_opts['proxy'] = proxy_url
+            print(f"✅ Using proxy for metadata extraction")
         
         # Add cookies if configured (use same path resolution as download_video)
         cookies_path = YouTubeService._resolve_cookies_path()
@@ -109,21 +107,19 @@ class YouTubeService:
         Returns:
             Dict with playlist title, description, channel, and list of videos
         """
+        proxy_url = os.getenv('PROXY_URL')
+        
         ydl_opts = {
             'quiet': False,
             'no_warnings': False,
             'extract_flat': 'in_playlist',  # Get metadata only, don't resolve each video
             'skip_download': True,
             'verbose': True,
-            'extractor_args': {
-                'youtube': {
-                    'player_client': ['web'],
-                },
-                'youtubepot-bgutilhttp': {
-                    'base_url': ['http://127.0.0.1:4416']
-                }
-            },
         }
+        
+        if proxy_url:
+            ydl_opts['proxy'] = proxy_url
+            print(f"✅ Using proxy for playlist extraction")
         
         cookies_path = YouTubeService._resolve_cookies_path()
         if cookies_path:
@@ -196,6 +192,8 @@ class YouTubeService:
             'best'
         ]
         
+        proxy_url = os.getenv('PROXY_URL')
+        
         ydl_opts = {
             'format': format_selectors[0],  # Start with best MP4
             'outtmpl': base_output_path + '.%(ext)s',  # yt-dlp will add extension
@@ -205,18 +203,13 @@ class YouTubeService:
             'no_check_certificate': False,
             'prefer_insecure': False,
             'verbose': True,
-            'extractor_args': {
-                'youtube': {
-                    'player_client': ['web'],
-                },
-                'youtubepot-bgutilhttp': {
-                    'base_url': ['http://127.0.0.1:4416']
-                }
-            },
-            # Retry on fragment errors
             'fragment_retries': 3,
             'retries': 3,
         }
+        
+        if proxy_url:
+            ydl_opts['proxy'] = proxy_url
+            print(f"✅ Using proxy for video download")
         
         # Add cookies if configured (prioritize cookies file for server environments)
         cookies_configured = False
@@ -241,10 +234,9 @@ class YouTubeService:
                 print(f"Warning: cookies_from_browser not available: {e}")
                 print("Note: On servers (like Render), use YOUTUBE_COOKIES_PATH with a cookies.txt file instead")
         
-        # If no cookies configured, try tv_embedded client which sometimes bypasses bot detection
+        # If no cookies configured, try mobile clients which sometimes bypass bot detection
         if not cookies_configured:
-            ydl_opts['extractor_args']['youtube']['player_client'] = ['tv_embedded', 'ios', 'android', 'web']
-            print("⚠️ No cookies configured - using tv_embedded client (may still trigger bot detection)")
+            print("⚠️ No cookies configured - using default clients (may still trigger bot detection)")
             print("   Recommendation: Set YOUTUBE_COOKIES_PATH to a valid cookies.txt file")
         else:
             print(f"✅ Cookies configured - using authenticated requests")
