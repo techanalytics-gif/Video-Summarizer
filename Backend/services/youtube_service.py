@@ -76,9 +76,6 @@ class YouTubeService:
                 },
                 'youtubepot-bgutilhttp': {
                     'base_url': ['http://127.0.0.1:4416']
-                },
-                'youtubepot-bgutilscript': {
-                    'script_path': ['/opt/render/project/src/Backend/yt-pot-server/server/build/generate_once.js']
                 }
             },
             'js_runtimes': {'node': {}},
@@ -228,9 +225,6 @@ class YouTubeService:
                 },
                 'youtubepot-bgutilhttp': {
                     'base_url': ['http://127.0.0.1:4416']
-                },
-                'youtubepot-bgutilscript': {
-                    'script_path': ['/opt/render/project/src/Backend/yt-pot-server/server/build/generate_once.js']
                 }
             },
             'js_runtimes': {'node': {}},
