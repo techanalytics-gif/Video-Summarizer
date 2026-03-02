@@ -7,6 +7,7 @@ from bson import ObjectId
 
 from models.database import db
 from models.video_job import VideoJob, TranscriptSegment, Topic, Frame, SubTopic
+from services.credit_service import credit_service
 from services.drive_service import drive_service
 from services.youtube_service import youtube_service
 from services.playwright_youtube_service import playwright_youtube_service
@@ -68,6 +69,32 @@ class ProcessingPipeline:
             # Get video metadata
             duration = self.ffmpeg.get_video_duration(video_path)
             await self._update_job(job_id, {"duration": duration})
+            
+            # === Credit Deduction (now that we know the actual duration) ===
+            user_id = job.get("user_id")
+            visibility = job.get("visibility", "public")
+            credits_charged = 0
+            if user_id:
+                cost = credit_service.calculate_cost(duration or 0, visibility)
+                rate_label = f"{'3' if visibility == 'private' else '1'} credit/min ({visibility})"
+                deduction = await credit_service.deduct_credits(
+                    clerk_user_id=user_id,
+                    amount=cost,
+                    job_id=job_id,
+                    description=f"Processed: {job.get('video_name', 'Untitled')} ({round((duration or 0)/60, 1)} min, {visibility})"
+                )
+                if not deduction["success"]:
+                    await self._update_job(job_id, {
+                        "status": "failed",
+                        "error_message": deduction["message"]
+                    })
+                    return  # Stop pipeline — insufficient credits
+                credits_charged = cost
+                await self._update_job(job_id, {
+                    "credits_charged": credits_charged,
+                    "credit_rate": rate_label
+                })
+                print(f"Charged {credits_charged} credits to user {user_id} (rate: {rate_label})")
             
             # Step 2: Extract audio
             await self._update_job(job_id, {
@@ -446,6 +473,23 @@ class ProcessingPipeline:
             
         except Exception as e:
             print(f"Error processing job {job_id}: {e}")
+            # Refund credits if they were charged
+            try:
+                failed_job = await self._get_job(job_id)
+                charged = failed_job.get("credits_charged", 0)
+                failed_user_id = failed_job.get("user_id")
+                if charged and charged > 0 and failed_user_id:
+                    refund_result = await credit_service.refund_credits(
+                        clerk_user_id=failed_user_id,
+                        amount=charged,
+                        job_id=job_id,
+                        reason=f"Processing failed: {str(e)[:100]}"
+                    )
+                    if refund_result["success"]:
+                        print(f"Refunded {charged} credits to user {failed_user_id}")
+            except Exception as refund_err:
+                print(f"Failed to refund credits: {refund_err}")
+            
             await self._update_job(job_id, {
                 "status": "failed",
                 "error_message": str(e)

@@ -117,58 +117,55 @@ const TopicDetail = () => {
 
     return (
         <div style={{ display: 'flex', height: 'calc(100vh - 60px)', overflow: 'hidden' }}>
-            {/* Sidebar - Table of Contents */}
+            {/* Sidebar */}
             <div style={{
-                width: sidebarOpen ? '300px' : '0px',
-                minWidth: sidebarOpen ? '300px' : '0px',
-                borderRight: '1px solid rgba(255,255,255,0.06)',
-                background: 'rgba(0,0,0,0.2)',
+                width: sidebarOpen ? '280px' : '0px',
+                minWidth: sidebarOpen ? '280px' : '0px',
+                borderRight: '1px solid rgba(255,255,255,0.05)',
+                background: 'rgba(0,0,0,0.15)',
                 display: 'flex',
                 flexDirection: 'column',
-                transition: 'all 0.3s ease',
+                transition: 'all 0.25s ease',
                 overflow: 'hidden'
             }}>
                 {/* Topic Header */}
-                <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ padding: '18px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                     <button
                         onClick={() => navigate('/topics')}
                         style={{
                             background: 'none',
                             border: 'none',
-                            color: '#818cf8',
+                            color: '#6366f1',
                             cursor: 'pointer',
                             fontSize: '12px',
                             padding: 0,
-                            marginBottom: '12px',
+                            marginBottom: '10px',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '4px'
                         }}
                     >
-                        ← Back to Topics
+                        ← Topics
                     </button>
-                    <h2 style={{ fontSize: '16px', fontWeight: '700', color: '#e0e7ff', margin: '0 0 8px 0', lineHeight: '1.3' }}>
+                    <h2 style={{ fontSize: '15px', fontWeight: '600', color: '#f1f5f9', margin: '0 0 6px 0', lineHeight: '1.3' }}>
                         {topic.title}
                     </h2>
                     {topic.channel && (
-                        <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 12px 0' }}>{topic.channel}</p>
+                        <p style={{ fontSize: '11px', color: '#475569', margin: '0 0 10px 0' }}>{topic.channel}</p>
                     )}
-                    {/* Progress */}
-                    <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '6px' }}>
-                        {completedCount} of {topic.video_count} videos processed
+                    <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '5px' }}>
+                        {completedCount} of {topic.video_count} processed
                     </div>
                     <div style={{
                         height: '3px',
-                        backgroundColor: 'rgba(255,255,255,0.06)',
+                        backgroundColor: 'rgba(255,255,255,0.04)',
                         borderRadius: '999px',
                         overflow: 'hidden'
                     }}>
                         <div style={{
                             height: '100%',
                             width: `${(topic.progress || 0) * 100}%`,
-                            background: topic.status === 'completed'
-                                ? 'linear-gradient(90deg, #22c55e, #10b981)'
-                                : 'linear-gradient(90deg, #6366f1, #818cf8)',
+                            background: topic.status === 'completed' ? '#22c55e' : '#6366f1',
                             borderRadius: '999px',
                             transition: 'width 0.5s ease'
                         }} />
@@ -176,7 +173,7 @@ const TopicDetail = () => {
                 </div>
 
                 {/* Chapter List */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '6px' }}>
                     {topic.videos?.map((video, idx) => (
                         <button
                             key={idx}
@@ -184,41 +181,41 @@ const TopicDetail = () => {
                             style={{
                                 display: 'flex',
                                 alignItems: 'flex-start',
-                                gap: '10px',
+                                gap: '8px',
                                 width: '100%',
-                                padding: '12px',
-                                background: selectedVideoIndex === idx ? 'rgba(99,102,241,0.15)' : 'transparent',
-                                border: selectedVideoIndex === idx ? '1px solid rgba(99,102,241,0.3)' : '1px solid transparent',
-                                borderRadius: '10px',
+                                padding: '10px',
+                                background: selectedVideoIndex === idx ? 'rgba(99,102,241,0.1)' : 'transparent',
+                                border: selectedVideoIndex === idx ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
+                                borderRadius: '8px',
                                 cursor: video.status === 'completed' ? 'pointer' : 'default',
                                 textAlign: 'left',
                                 color: 'inherit',
                                 transition: 'all 0.15s ease',
-                                marginBottom: '2px',
-                                opacity: video.status === 'pending' ? 0.5 : 1
+                                marginBottom: '1px',
+                                opacity: video.status === 'pending' ? 0.4 : 1
                             }}
                         >
                             <span style={{
-                                fontSize: '12px',
-                                minWidth: '22px',
-                                height: '22px',
+                                fontSize: '11px',
+                                minWidth: '20px',
+                                height: '20px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                borderRadius: '6px',
-                                background: selectedVideoIndex === idx ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.05)',
-                                color: '#e0e7ff',
-                                fontWeight: '700',
+                                borderRadius: '5px',
+                                background: selectedVideoIndex === idx ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)',
+                                color: '#cbd5e1',
+                                fontWeight: '600',
                                 flexShrink: 0
                             }}>
                                 {idx + 1}
                             </span>
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{
-                                    fontSize: '13px',
-                                    fontWeight: selectedVideoIndex === idx ? '600' : '500',
-                                    color: selectedVideoIndex === idx ? '#e0e7ff' : '#c3c9e6',
-                                    lineHeight: '1.3',
+                                    fontSize: '12px',
+                                    fontWeight: selectedVideoIndex === idx ? '600' : '400',
+                                    color: selectedVideoIndex === idx ? '#f1f5f9' : '#94a3b8',
+                                    lineHeight: '1.4',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     display: '-webkit-box',
@@ -228,7 +225,7 @@ const TopicDetail = () => {
                                     {video.video_title}
                                 </div>
                             </div>
-                            <span style={{ fontSize: '14px', flexShrink: 0 }}>
+                            <span style={{ fontSize: '12px', flexShrink: 0 }}>
                                 {getStatusIcon(video.status)}
                             </span>
                         </button>
@@ -236,52 +233,52 @@ const TopicDetail = () => {
                 </div>
             </div>
 
-            {/* Toggle sidebar button */}
+            {/* Sidebar toggle */}
             <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 style={{
                     position: 'absolute',
-                    left: sidebarOpen ? '300px' : '0px',
+                    left: sidebarOpen ? '280px' : '0px',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    width: '24px',
-                    height: '48px',
-                    background: 'rgba(99,102,241,0.2)',
-                    border: '1px solid rgba(99,102,241,0.3)',
+                    width: '20px',
+                    height: '40px',
+                    background: 'rgba(99,102,241,0.12)',
+                    border: '1px solid rgba(99,102,241,0.2)',
                     borderLeft: 'none',
-                    borderRadius: '0 8px 8px 0',
-                    color: '#818cf8',
+                    borderRadius: '0 6px 6px 0',
+                    color: '#6366f1',
                     cursor: 'pointer',
-                    transition: 'left 0.3s ease',
+                    transition: 'left 0.25s ease',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '12px',
+                    fontSize: '11px',
                     zIndex: 10
                 }}
             >
                 {sidebarOpen ? '‹' : '›'}
             </button>
 
-            {/* Main Content - Report Viewer */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '32px 40px' }}>
-                {/* Topic Summary (if available) */}
+            {/* Main Content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px' }}>
+                {/* Topic Summary */}
                 {topic.topic_summary && selectedVideoIndex === 0 && (
                     <div style={{
-                        background: 'rgba(99,102,241,0.08)',
-                        border: '1px solid rgba(99,102,241,0.2)',
-                        borderRadius: '14px',
-                        padding: '20px',
-                        marginBottom: '24px'
+                        background: 'rgba(99,102,241,0.05)',
+                        border: '1px solid rgba(99,102,241,0.12)',
+                        borderRadius: '10px',
+                        padding: '18px',
+                        marginBottom: '20px'
                     }}>
-                        <h4 style={{ color: '#a5b4fc', margin: '0 0 8px 0', fontSize: '14px' }}>📖 Topic Overview</h4>
-                        <p style={{ color: '#c3c9e6', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>{topic.topic_summary}</p>
+                        <h4 style={{ color: '#a5b4fc', margin: '0 0 6px 0', fontSize: '13px' }}>Topic Overview</h4>
+                        <p style={{ color: '#94a3b8', fontSize: '13px', lineHeight: '1.6', margin: 0 }}>{topic.topic_summary}</p>
                         {topic.learning_objectives?.length > 0 && (
-                            <div style={{ marginTop: '12px' }}>
-                                <h5 style={{ color: '#a5b4fc', margin: '0 0 6px 0', fontSize: '12px' }}>Learning Objectives</h5>
+                            <div style={{ marginTop: '10px' }}>
+                                <h5 style={{ color: '#a5b4fc', margin: '0 0 6px 0', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Learning Objectives</h5>
                                 <ul style={{ margin: 0, paddingLeft: '16px' }}>
                                     {topic.learning_objectives.map((obj, i) => (
-                                        <li key={i} style={{ color: '#c3c9e6', fontSize: '13px', marginBottom: '4px' }}>{obj}</li>
+                                        <li key={i} style={{ color: '#94a3b8', fontSize: '12px', marginBottom: '4px', lineHeight: '1.5' }}>{obj}</li>
                                     ))}
                                 </ul>
                             </div>
@@ -293,28 +290,27 @@ const TopicDetail = () => {
                 {topic.videos?.[selectedVideoIndex] && (
                     <>
                         {/* Chapter Header */}
-                        <div style={{ marginBottom: '24px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                        <div style={{ marginBottom: '20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
                                 <span style={{
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    width: '32px',
-                                    height: '32px',
-                                    borderRadius: '10px',
-                                    background: 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(34,197,94,0.3))',
-                                    color: '#e0e7ff',
-                                    fontSize: '14px',
+                                    width: '28px',
+                                    height: '28px',
+                                    borderRadius: '7px',
+                                    background: 'rgba(99,102,241,0.12)',
+                                    color: '#a5b4fc',
+                                    fontSize: '13px',
                                     fontWeight: '700',
-                                    border: '1px solid rgba(99,102,241,0.3)'
                                 }}>
                                     {selectedVideoIndex + 1}
                                 </span>
-                                <h2 style={{ fontSize: '22px', fontWeight: '700', color: '#e0e7ff', margin: 0 }}>
+                                <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#f1f5f9', margin: 0, letterSpacing: '-0.01em' }}>
                                     {topic.videos[selectedVideoIndex].video_title}
                                 </h2>
                             </div>
-                            <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                            <div style={{ fontSize: '11px', color: '#475569', marginLeft: '38px' }}>
                                 Chapter {selectedVideoIndex + 1} of {topic.video_count}
                                 {topic.videos[selectedVideoIndex].duration > 0 && (
                                     <span> · {Math.round(topic.videos[selectedVideoIndex].duration / 60)} min</span>
@@ -350,47 +346,41 @@ const TopicDetail = () => {
                                 {/* 5-Slide Summary */}
                                 {videoResult.slide_summary?.length > 0 && (
                                     <div style={{ marginBottom: '20px' }}>
-                                        <h4 style={{ marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <span>📊 5-Slide Summary</span>
-                                            <span style={{
-                                                fontSize: '11px', padding: '3px 10px', borderRadius: '999px',
-                                                background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontWeight: '500',
-                                                border: '1px solid rgba(99,102,241,0.3)'
-                                            }}>
-                                                {videoResult.slide_summary.length} slides
-                                            </span>
+                                        <h4 style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span>Slide Summary</span>
+                                            <span className="pill pill-ghost">{videoResult.slide_summary.length} slides</span>
                                         </h4>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '12px' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '10px' }}>
                                             {videoResult.slide_summary.map((slide, idx) => (
                                                 <div key={idx} style={{
-                                                    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
-                                                    borderRadius: '12px', padding: '16px'
+                                                    background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)',
+                                                    borderRadius: '10px', padding: '14px'
                                                 }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                                                         <span style={{
                                                             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                                            width: '24px', height: '24px', borderRadius: '6px',
-                                                            background: 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(34,197,94,0.3))',
-                                                            color: '#e0e7ff', fontSize: '12px', fontWeight: '700'
+                                                            width: '22px', height: '22px', borderRadius: '5px',
+                                                            background: 'rgba(99,102,241,0.12)',
+                                                            color: '#a5b4fc', fontSize: '11px', fontWeight: '700'
                                                         }}>
                                                             {idx + 1}
                                                         </span>
-                                                        <span style={{ fontSize: '13px', fontWeight: '700', color: '#e0e7ff' }}>
+                                                        <span style={{ fontSize: '12px', fontWeight: '600', color: '#e2e8f0' }}>
                                                             {slide.title}
                                                         </span>
                                                     </div>
                                                     <ul style={{ margin: 0, paddingLeft: '14px', listStyle: 'none' }}>
                                                         {slide.bullets?.map((bullet, bIdx) => (
                                                             <li key={bIdx} style={{
-                                                                fontSize: '12px', color: '#c3c9e6', lineHeight: '1.5', marginBottom: '4px',
-                                                                position: 'relative', paddingLeft: '12px',
+                                                                fontSize: '11px', color: '#94a3b8', lineHeight: '1.5', marginBottom: '3px',
+                                                                position: 'relative', paddingLeft: '10px',
                                                             }}>
                                                                 <span style={{
-                                                                    position: 'absolute', left: 0, top: '6px', width: '4px', height: '4px',
-                                                                    borderRadius: '50%', background: 'rgba(99,102,241,0.6)'
+                                                                    position: 'absolute', left: 0, top: '6px', width: '3px', height: '3px',
+                                                                    borderRadius: '50%', background: 'rgba(99,102,241,0.4)'
                                                                 }} />
                                                                 <span dangerouslySetInnerHTML={{
-                                                                    __html: bullet.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#e0e7ff;font-weight:600">$1</strong>')
+                                                                    __html: bullet.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#e2e8f0;font-weight:600">$1</strong>')
                                                                 }} />
                                                             </li>
                                                         ))}
@@ -528,41 +518,23 @@ const TopicDetail = () => {
                         <div style={{
                             display: 'flex',
                             justifyContent: 'space-between',
-                            marginTop: '32px',
-                            paddingTop: '20px',
-                            borderTop: '1px solid rgba(255,255,255,0.06)'
+                            marginTop: '28px',
+                            paddingTop: '16px',
+                            borderTop: '1px solid rgba(255,255,255,0.05)'
                         }}>
                             <button
+                                className="nav-btn"
                                 onClick={() => selectVideo(selectedVideoIndex - 1)}
                                 disabled={selectedVideoIndex === 0}
-                                style={{
-                                    padding: '10px 20px',
-                                    background: selectedVideoIndex === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(99,102,241,0.15)',
-                                    border: `1px solid ${selectedVideoIndex === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(99,102,241,0.3)'}`,
-                                    borderRadius: '10px',
-                                    color: selectedVideoIndex === 0 ? '#4b5563' : '#a5b4fc',
-                                    cursor: selectedVideoIndex === 0 ? 'default' : 'pointer',
-                                    fontSize: '13px',
-                                    fontWeight: '600'
-                                }}
                             >
-                                ← Previous Chapter
+                                ← Previous
                             </button>
                             <button
+                                className="nav-btn"
                                 onClick={() => selectVideo(selectedVideoIndex + 1)}
                                 disabled={selectedVideoIndex >= (topic.videos?.length || 1) - 1}
-                                style={{
-                                    padding: '10px 20px',
-                                    background: selectedVideoIndex >= (topic.videos?.length || 1) - 1 ? 'rgba(255,255,255,0.03)' : 'rgba(99,102,241,0.15)',
-                                    border: `1px solid ${selectedVideoIndex >= (topic.videos?.length || 1) - 1 ? 'rgba(255,255,255,0.06)' : 'rgba(99,102,241,0.3)'}`,
-                                    borderRadius: '10px',
-                                    color: selectedVideoIndex >= (topic.videos?.length || 1) - 1 ? '#4b5563' : '#a5b4fc',
-                                    cursor: selectedVideoIndex >= (topic.videos?.length || 1) - 1 ? 'default' : 'pointer',
-                                    fontSize: '13px',
-                                    fontWeight: '600'
-                                }}
                             >
-                                Next Chapter →
+                                Next →
                             </button>
                         </div>
                     </>

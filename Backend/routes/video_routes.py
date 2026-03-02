@@ -20,6 +20,7 @@ from models.video_job import (
 )
 from services.pipeline import pipeline
 from services.gemini_service import GeminiService
+from services.credit_service import credit_service
 import config
 
 router = APIRouter(prefix="/api/videos", tags=["videos"])
@@ -41,6 +42,12 @@ async def process_video(
         Job response with job_id and initial status
     """
     try:
+        # Pre-check: ensure user has credits
+        if job_request.user_id:
+            has_credits = await credit_service.check_credits(job_request.user_id)
+            if not has_credits:
+                raise HTTPException(status_code=402, detail="Insufficient credits. Please add more credits to continue.")
+        
         # Create job in database
         database = db.get_db()
         
@@ -48,6 +55,7 @@ async def process_video(
             drive_video_url=job_request.drive_video_url,
             video_name=job_request.video_name,
             user_id=job_request.user_id,
+            visibility=job_request.visibility or "public",
             status="pending",
             progress=0.0
         )
@@ -67,6 +75,8 @@ async def process_video(
             created_at=datetime.utcnow()
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create job: {str(e)}")
 
@@ -87,6 +97,12 @@ async def process_youtube_video(
         Job response with job_id and initial status
     """
     try:
+        # Pre-check: ensure user has credits
+        if job_request.user_id:
+            has_credits = await credit_service.check_credits(job_request.user_id)
+            if not has_credits:
+                raise HTTPException(status_code=402, detail="Insufficient credits. Please add more credits to continue.")
+        
         # Create job in database
         database = db.get_db()
         
@@ -95,6 +111,7 @@ async def process_youtube_video(
             video_name=job_request.video_name,
             user_id=job_request.user_id,
             video_source="youtube",
+            visibility=job_request.visibility or "public",
             status="pending",
             progress=0.0
         )
@@ -114,6 +131,8 @@ async def process_youtube_video(
             created_at=datetime.utcnow()
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create YouTube job: {str(e)}")
 
@@ -123,6 +142,7 @@ async def process_uploaded_video(
     file: UploadFile = File(...),
     video_name: str = Form(None),
     user_id: str = Form(None),
+    visibility: str = Form("public"),
     background_tasks: BackgroundTasks = BackgroundTasks()
 ):
     """
@@ -137,6 +157,12 @@ async def process_uploaded_video(
         Job response with job_id and initial status
     """
     try:
+        # Pre-check: ensure user has credits
+        if user_id:
+            has_credits = await credit_service.check_credits(user_id)
+            if not has_credits:
+                raise HTTPException(status_code=402, detail="Insufficient credits. Please add more credits to continue.")
+        
         # Validate file type
         content_type = file.content_type or ""
         if not any(ext in content_type for ext in ["video", "mp4", "mov", "avi", "mkv", "webm"]):
@@ -152,6 +178,7 @@ async def process_uploaded_video(
             video_name=video_name or file.filename or "Uploaded Video",
             video_source="upload",
             user_id=user_id,
+            visibility=visibility or "public",
             status="pending",
             progress=0.0
         )
@@ -364,7 +391,8 @@ async def get_reports(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
     status: str = Query(None),
-    user_id: str = Query(None)
+    user_id: str = Query(None),
+    mode: str = Query("personal")  # "personal" or "public"
 ):
     """
     Get all past reports with pagination
@@ -374,6 +402,7 @@ async def get_reports(
         limit: Number of results per page
         status: Filter by status (optional)
         user_id: Filter by Clerk user ID (optional)
+        mode: "personal" for user's own reports, "public" for other users' public reports
     
     Returns:
         List of report summaries
@@ -387,9 +416,15 @@ async def get_reports(
         if status and status == "completed":
             query["status"] = "completed"
         
-        # Filter by user_id if provided
-        if user_id:
-            query["user_id"] = user_id
+        if mode == "public":
+            # Public library: show only public reports from OTHER users
+            query["visibility"] = "public"
+            if user_id:
+                query["user_id"] = {"$ne": user_id}
+        else:
+            # Personal: show only user's own reports
+            if user_id:
+                query["user_id"] = user_id
         
         # Calculate skip
         skip = (page - 1) * limit
@@ -438,12 +473,52 @@ async def get_reports(
                 drive_file_id=job.get("drive_file_id"),
                 video_genre=job.get("video_genre"),
                 genre_confidence=job.get("genre_confidence"),
+                visibility=job.get("visibility", "private"),
+                credits_charged=job.get("credits_charged"),
             ))
         
         return reports
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get reports: {str(e)}")
+
+
+class VisibilityUpdate(BaseModel):
+    visibility: str  # "public" or "private"
+    user_id: str  # Clerk user ID (owner verification)
+
+
+@router.patch("/{job_id}/visibility")
+async def update_visibility(job_id: str, body: VisibilityUpdate):
+    """
+    Toggle visibility of a report between public and private.
+    Only the owner can change visibility.
+    """
+    if body.visibility not in ("public", "private"):
+        raise HTTPException(status_code=400, detail="Visibility must be 'public' or 'private'")
+    
+    try:
+        database = db.get_db()
+        job = await database.video_jobs.find_one({"_id": ObjectId(job_id)})
+        
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+        
+        # Verify ownership
+        if job.get("user_id") != body.user_id:
+            raise HTTPException(status_code=403, detail="You can only change visibility of your own reports")
+        
+        await database.video_jobs.update_one(
+            {"_id": ObjectId(job_id)},
+            {"$set": {"visibility": body.visibility, "updated_at": datetime.utcnow()}}
+        )
+        
+        return {"message": f"Visibility updated to {body.visibility}", "visibility": body.visibility}
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update visibility: {str(e)}")
 
 
 @router.get("/{job_id}/download/transcript")

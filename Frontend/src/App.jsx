@@ -1,11 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser } from '@clerk/clerk-react';
 import './App.css';
 import Landing from './pages/Landing';
 import Reports from './pages/Reports';
 import Topics from './pages/Topics';
 import TopicDetail from './pages/TopicDetail';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+function CreditsBadge() {
+  const { user } = useUser();
+  const [credits, setCredits] = useState(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const fetchCredits = async () => {
+      try {
+        const resp = await fetch(`${API_BASE}/api/users/me?user_id=${user.id}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          setCredits(data.credits);
+        }
+      } catch (err) {
+        console.warn('Credits fetch failed', err);
+      }
+    };
+    fetchCredits();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchCredits, 30000);
+    return () => clearInterval(interval);
+  }, [user?.id]);
+
+  if (credits === null) return null;
+
+  return (
+    <div className="credits-badge">
+      <span>💎</span>
+      <span>{Math.round(credits)}</span>
+    </div>
+  );
+}
 
 function App() {
   return (
@@ -25,6 +60,7 @@ function App() {
           </SignedOut>
           <SignedIn>
             <div className="auth-user">
+              <CreditsBadge />
               <UserButton
                 appearance={{
                   elements: {

@@ -29,11 +29,16 @@ MAX_ANALYSIS_FRAMES = 150 # Max frames to send to Gemini for deep analysis (Phas
 # For Render Free (512MB): Use 2
 # For Render Starter (2GB): Use 5
 # For Render Pro (4GB+): Use 10+
-MAX_CONCURRENT_TRANSCRIBES = 2
+MAX_CONCURRENT_TRANSCRIBES = 2   
 MAX_CONCURRENT_VISION_TASKS = 2
 MAX_CONCURRENT_UPLOADS = 3
 
 AUDIO_SAMPLE_RATE = 16000  # 16kHz for transcription
+
+# Credit System Configuration
+SIGNUP_BONUS_CREDITS = 100  # Credits given on first sign-up
+CREDITS_PER_MINUTE = 1      # Base rate: 1 credit per minute (public)
+PRIVATE_CREDIT_MULTIPLIER = 3  # Private videos cost 3x
 
 # YouTube Configuration (optional)
 YOUTUBE_COOKIES_PATH = os.getenv("YOUTUBE_COOKIES_PATH", None)  # Path to cookies.txt file

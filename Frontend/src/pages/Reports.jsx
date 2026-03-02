@@ -14,6 +14,8 @@ const Reports = () => {
   const [limit] = useState(10);
   const [status, setStatus] = useState('');
   const [totalReports, setTotalReports] = useState(0);
+  const [activeTab, setActiveTab] = useState('personal'); // 'personal' or 'public'
+  const [togglingVisibility, setTogglingVisibility] = useState(null); // job_id being toggled
 
   const formatDuration = (seconds) => {
     if (!seconds) return 'N/A';
@@ -41,6 +43,7 @@ const Reports = () => {
       const query = new URLSearchParams();
       query.append('page', page);
       query.append('limit', limit);
+      query.append('mode', activeTab);
       if (status) query.append('status', status);
       if (user?.id) query.append('user_id', user.id);
 
@@ -67,7 +70,7 @@ const Reports = () => {
     if (user?.id) {
       fetchReports();
     }
-  }, [page, status, user?.id]);
+  }, [page, status, user?.id, activeTab]);
 
   const handleViewReport = (jobId) => {
     navigate(`/?jobId=${jobId}`);
@@ -126,45 +129,96 @@ const Reports = () => {
     return { embed: null, link: null };
   };
 
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setPage(1);
+    setReports([]);
+  };
+
+  const toggleVisibility = async (e, jobId, currentVisibility) => {
+    e.stopPropagation();
+    const newVisibility = currentVisibility === 'public' ? 'private' : 'public';
+    setTogglingVisibility(jobId);
+    try {
+      const response = await fetch(`${API_BASE}/api/videos/${jobId}/visibility`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visibility: newVisibility, user_id: user.id })
+      });
+      if (!response.ok) throw new Error('Failed to update visibility');
+      // Update local state
+      setReports(prev => prev.map(r =>
+        r.job_id === jobId ? { ...r, visibility: newVisibility } : r
+      ));
+    } catch (err) {
+      console.error('Toggle visibility error:', err);
+    } finally {
+      setTogglingVisibility(null);
+    }
+  };
+
   return (
     <div className="page">
-      <header style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+      <header style={{ paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ margin: 0, fontSize: '28px' }}>📊 Past Reports</h1>
+          <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#f1f5f9', letterSpacing: '-0.02em' }}>Reports</h1>
+          <button className="nav-btn" onClick={() => navigate('/')}>← Home</button>
+        </div>
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: '0', marginTop: '16px' }}>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => handleTabChange('personal')}
             style={{
-              padding: '10px 20px',
-              backgroundColor: '#3b82f6',
-              color: 'white',
+              padding: '10px 24px',
+              backgroundColor: 'transparent',
+              color: activeTab === 'personal' ? '#a5b4fc' : '#64748b',
               border: 'none',
-              borderRadius: '8px',
+              borderBottom: activeTab === 'personal' ? '2px solid #6366f1' : '2px solid transparent',
               cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500'
+              fontSize: '13px',
+              fontWeight: activeTab === 'personal' ? '600' : '400',
+              transition: 'all 0.15s ease'
             }}
           >
-            ← New Video
+            Your Reports
+          </button>
+          <button
+            onClick={() => handleTabChange('public')}
+            style={{
+              padding: '10px 24px',
+              backgroundColor: 'transparent',
+              color: activeTab === 'public' ? '#a5b4fc' : '#64748b',
+              border: 'none',
+              borderBottom: activeTab === 'public' ? '2px solid #6366f1' : '2px solid transparent',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: activeTab === 'public' ? '600' : '400',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            Public Library
           </button>
         </div>
       </header>
 
-      <div style={{ padding: '20px' }}>
+      <div style={{ padding: '16px 0' }}>
         {/* Filters */}
-        <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+        <div style={{ marginBottom: '16px' }}>
           <select
             value={status}
             onChange={(e) => {
               setStatus(e.target.value);
               setPage(1);
             }}
+            className="field"
             style={{
-              padding: '10px 15px',
-              backgroundColor: 'rgba(255,255,255,0.05)',
-              color: 'white',
-              border: '1px solid rgba(255,255,255,0.2)',
+              padding: '8px 12px',
+              backgroundColor: 'rgba(255,255,255,0.04)',
+              color: '#cbd5e1',
+              border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: '8px',
-              fontSize: '14px'
+              fontSize: '13px',
+              fontFamily: 'inherit'
             }}
           >
             <option value="">All Status</option>
@@ -175,24 +229,17 @@ const Reports = () => {
           </select>
         </div>
 
-        {/* Loading State */}
+        {/* Loading */}
         {loading && (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <div style={{ fontSize: '14px', color: '#9ca3af' }}>Loading reports...</div>
+          <div style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '13px' }}>
+            Loading reports...
           </div>
         )}
 
-        {/* Error State */}
+        {/* Error */}
         {error && (
-          <div style={{
-            padding: '15px',
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            borderLeft: '3px solid #ef4444',
-            borderRadius: '6px',
-            color: '#fca5a5',
-            marginBottom: '20px'
-          }}>
-            Error: {error}
+          <div className="error" style={{ marginBottom: '16px' }}>
+            {error}
           </div>
         )}
 
@@ -200,24 +247,18 @@ const Reports = () => {
         {!loading && reports.length > 0 ? (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-            gap: '20px'
+            gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+            gap: '16px'
           }}>
             {reports.map((report) => (
               <div
                 key={report.job_id}
                 className="card"
                 style={{
-                  padding: '20px',
                   cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '12px',
-                  backgroundColor: 'rgba(255,255,255,0.02)',
-                  backdropFilter: 'blur(10px)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '15px'
+                  gap: '12px'
                 }}
                 onClick={() => handleViewReport(report.job_id)}
               >
@@ -228,22 +269,20 @@ const Reports = () => {
                     <div style={{
                       position: 'relative',
                       height: '0',
-                      paddingBottom: '56.25%', // 16:9
-                      borderRadius: '10px',
+                      paddingBottom: '56.25%',
+                      borderRadius: '8px',
                       overflow: 'hidden',
-                      background: 'linear-gradient(135deg, rgba(59,130,246,0.25), rgba(16,185,129,0.25))',
-                      border: '1px solid rgba(255,255,255,0.05)'
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid rgba(255,255,255,0.04)'
                     }}>
                       {links.embed ? (
                         <iframe
                           src={links.embed}
-                          title={report.video_name || 'Video preview'}
+                          title={report.video_name || 'Video'}
                           style={{
                             position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
+                            top: 0, left: 0,
+                            width: '100%', height: '100%',
                             border: '0'
                           }}
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -256,18 +295,13 @@ const Reports = () => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: '#d1d5db',
-                          fontSize: '32px',
-                          background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(16,185,129,0.15))'
+                          color: '#475569',
+                          fontSize: '28px'
                         }}>
                           🎬
                         </div>
                       )}
-                      <div style={{
-                        position: 'absolute',
-                        top: '10px',
-                        right: '10px'
-                      }}>
+                      <div style={{ position: 'absolute', top: '8px', right: '8px' }}>
                         {getStatusBadge(report.status)}
                       </div>
                       {links.link && (
@@ -278,18 +312,17 @@ const Reports = () => {
                           onClick={(e) => e.stopPropagation()}
                           style={{
                             position: 'absolute',
-                            left: '10px',
-                            bottom: '10px',
-                            padding: '8px 12px',
-                            backgroundColor: 'rgba(0,0,0,0.55)',
+                            left: '8px',
+                            bottom: '8px',
+                            padding: '5px 10px',
+                            backgroundColor: 'rgba(0,0,0,0.6)',
                             color: 'white',
                             borderRadius: '6px',
-                            fontSize: '12px',
+                            fontSize: '11px',
                             textDecoration: 'none',
-                            border: '1px solid rgba(255,255,255,0.2)'
                           }}
                         >
-                          ▶ Open video
+                          Open ↗
                         </a>
                       )}
                     </div>
@@ -297,43 +330,33 @@ const Reports = () => {
                 })()}
 
                 {/* Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                  <div style={{ flex: 1 }}>
-                    <h3 style={{
-                      margin: '0 0 5px 0',
-                      fontSize: '18px',
-                      color: '#fff',
-                      wordBreak: 'break-word'
-                    }}>
-                      {report.video_name || 'Untitled Video'}
-                    </h3>
-                    <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '5px' }}>
-                      ID: {report.job_id.substring(0, 12)}...
-                    </div>
-                    {report.video_genre && report.video_genre !== 'unknown' && (
-                      <div style={{ marginTop: '5px' }}>
-                        <span style={{
-                          padding: '3px 10px',
-                          backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                          color: '#60a5fa',
-                          borderRadius: '10px',
-                          fontSize: '11px',
-                          fontWeight: '500',
-                          textTransform: 'capitalize'
-                        }}>
-                          🎬 {report.video_genre.replace(/_/g, ' ')}
-                        </span>
-                      </div>
-                    )}
+                <div>
+                  <h3 style={{
+                    margin: '0 0 4px 0',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    color: '#f1f5f9',
+                    wordBreak: 'break-word',
+                    lineHeight: '1.3'
+                  }}>
+                    {report.video_name || 'Untitled Video'}
+                  </h3>
+                  <div style={{ fontSize: '11px', color: '#475569' }}>
+                    {report.job_id.substring(0, 12)}...
                   </div>
+                  {report.video_genre && report.video_genre !== 'unknown' && (
+                    <span className="pill" style={{ marginTop: '6px', textTransform: 'capitalize' }}>
+                      {report.video_genre.replace(/_/g, ' ')}
+                    </span>
+                  )}
                 </div>
 
                 {/* Summary */}
                 {report.executive_summary && (
                   <p style={{
                     margin: '0',
-                    fontSize: '13px',
-                    color: '#d1d5db',
+                    fontSize: '12px',
+                    color: '#94a3b8',
                     lineHeight: '1.5',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -349,129 +372,117 @@ const Reports = () => {
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: '1fr 1fr',
-                  gap: '10px',
+                  gap: '8px',
                   paddingTop: '10px',
-                  borderTop: '1px solid rgba(255,255,255,0.1)'
+                  borderTop: '1px solid rgba(255,255,255,0.05)'
                 }}>
                   <div>
-                    <div style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase' }}>Topics</div>
-                    <div style={{ fontSize: '20px', fontWeight: '600', color: '#3b82f6' }}>
+                    <div style={{ fontSize: '10px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Topics</div>
+                    <div style={{ fontSize: '18px', fontWeight: '600', color: '#a5b4fc' }}>
                       {report.topics_count || 0}
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase' }}>Duration</div>
-                    <div style={{ fontSize: '16px', fontWeight: '600', color: '#10b981' }}>
+                    <div style={{ fontSize: '10px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Duration</div>
+                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#22c55e' }}>
                       {formatDuration(report.duration)}
                     </div>
                   </div>
                 </div>
 
-                {/* Date */}
+                {/* Date & Credits */}
                 <div style={{
-                  fontSize: '12px',
-                  color: '#6b7280',
-                  paddingTop: '10px',
-                  borderTop: '1px solid rgba(255,255,255,0.05)'
+                  fontSize: '11px',
+                  color: '#475569',
+                  paddingTop: '8px',
+                  borderTop: '1px solid rgba(255,255,255,0.04)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start'
                 }}>
-                  Created: {formatDate(report.created_at)}
-                  {report.completed_at && (
-                    <>
-                      <br />
-                      Completed: {formatDate(report.completed_at)}
-                    </>
+                  <div>
+                    {formatDate(report.created_at)}
+                  </div>
+                  {report.credits_charged != null && (
+                    <span className="credits-badge" style={{ fontSize: '11px', padding: '2px 8px', marginRight: 0 }}>
+                      💎 {Math.round(report.credits_charged)}
+                    </span>
                   )}
                 </div>
 
-                {/* Action Buttons */}
-                <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
+                  {/* Visibility Toggle — real toggle switch */}
+                  {activeTab === 'personal' && (
+                    <div
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '8px 12px',
+                        backgroundColor: 'rgba(255,255,255,0.02)',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(255,255,255,0.05)'
+                      }}
+                    >
+                      <span style={{ fontSize: '12px', color: '#64748b' }}>
+                        {(report.visibility || 'private') === 'public' ? 'Public' : 'Private'}
+                      </span>
+                      <label className="toggle-switch" style={{ gap: '0' }}>
+                        <input
+                          type="checkbox"
+                          checked={(report.visibility || 'private') === 'public'}
+                          disabled={togglingVisibility === report.job_id}
+                          onChange={() => toggleVisibility(
+                            { stopPropagation: () => {} },
+                            report.job_id,
+                            report.visibility || 'private'
+                          )}
+                        />
+                        <span className="toggle-track toggle-track--green" />
+                      </label>
+                    </div>
+                  )}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleViewReport(report.job_id);
                     }}
                     style={{
-                      padding: '10px',
-                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                      color: '#3b82f6',
-                      border: '1px solid #3b82f6',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontSize: '13px',
+                      padding: '8px',
+                      background: '#6366f1',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '12px',
                       fontWeight: '500',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseOver={(e) => {
-                      e.target.style.backgroundColor = '#3b82f6';
-                      e.target.style.color = 'white';
-                    }}
-                    onMouseOut={(e) => {
-                      e.target.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-                      e.target.style.color = '#3b82f6';
                     }}
                   >
                     View Report →
                   </button>
 
                   {/* Download Buttons */}
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '6px' }}>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         window.open(`${API_BASE}/api/videos/${report.job_id}/download/transcript?format=txt`, '_blank');
                       }}
-                      style={{
-                        flex: 1,
-                        padding: '8px',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        color: '#10b981',
-                        border: '1px solid #10b981',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseOver={(e) => {
-                        e.target.style.backgroundColor = '#10b981';
-                        e.target.style.color = 'white';
-                      }}
-                      onMouseOut={(e) => {
-                        e.target.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
-                        e.target.style.color = '#10b981';
-                      }}
-                      title="Download Transcript"
+                      className="nav-btn"
+                      style={{ flex: 1, padding: '7px', fontSize: '11px', textAlign: 'center' }}
                     >
-                      📄 Transcript
+                      Transcript
                     </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         window.open(`${API_BASE}/api/videos/${report.job_id}/download/audio`, '_blank');
                       }}
-                      style={{
-                        flex: 1,
-                        padding: '8px',
-                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                        color: '#f59e0b',
-                        border: '1px solid #f59e0b',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseOver={(e) => {
-                        e.target.style.backgroundColor = '#f59e0b';
-                        e.target.style.color = 'white';
-                      }}
-                      onMouseOut={(e) => {
-                        e.target.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
-                        e.target.style.color = '#f59e0b';
-                      }}
-                      title="Download Audio"
+                      className="nav-btn"
+                      style={{ flex: 1, padding: '7px', fontSize: '11px', textAlign: 'center' }}
                     >
-                      🎵 Audio
+                      Audio
                     </button>
                   </div>
                 </div>
@@ -483,22 +494,34 @@ const Reports = () => {
             <div style={{
               textAlign: 'center',
               padding: '60px 20px',
-              color: '#9ca3af'
+              color: '#64748b'
             }}>
-              <div style={{ fontSize: '48px', marginBottom: '15px' }}>📭</div>
-              <div style={{ fontSize: '16px' }}>No reports found</div>
-              <div style={{ fontSize: '14px', marginTop: '10px' }}>
-                {status ? 'Try changing the filter or ' : ''}
-                <span
-                  onClick={() => navigate('/')}
-                  style={{
-                    color: '#3b82f6',
-                    cursor: 'pointer',
-                    textDecoration: 'underline'
-                  }}
-                >
-                  process a new video
-                </span>
+              <div style={{ fontSize: '40px', marginBottom: '12px', opacity: 0.5 }}>
+                {activeTab === 'public' ? '🌐' : '📭'}
+              </div>
+              <div style={{ fontSize: '14px', color: '#94a3b8' }}>
+                {activeTab === 'public'
+                  ? 'No public reports from other users yet'
+                  : 'No reports found'}
+              </div>
+              <div style={{ fontSize: '13px', marginTop: '8px' }}>
+                {activeTab === 'public'
+                  ? 'Public reports from other users will appear here.'
+                  : (
+                    <>
+                      {status ? 'Try changing the filter or ' : ''}
+                      <span
+                        onClick={() => navigate('/')}
+                        style={{
+                          color: '#6366f1',
+                          cursor: 'pointer',
+                          textDecoration: 'underline'
+                        }}
+                      >
+                        process a new video
+                      </span>
+                    </>
+                  )}
               </div>
             </div>
           )
@@ -509,46 +532,26 @@ const Reports = () => {
           <div style={{
             display: 'flex',
             justifyContent: 'center',
+            alignItems: 'center',
             gap: '10px',
-            marginTop: '40px',
-            paddingTop: '20px',
-            borderTop: '1px solid rgba(255,255,255,0.1)'
+            marginTop: '32px',
+            paddingTop: '16px',
+            borderTop: '1px solid rgba(255,255,255,0.05)'
           }}>
             <button
+              className="nav-btn"
               onClick={() => setPage(Math.max(1, page - 1))}
               disabled={page === 1}
-              style={{
-                padding: '8px 15px',
-                backgroundColor: page === 1 ? 'rgba(255,255,255,0.05)' : 'rgba(59, 130, 246, 0.1)',
-                color: page === 1 ? '#6b7280' : '#3b82f6',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '6px',
-                cursor: page === 1 ? 'not-allowed' : 'pointer',
-                fontSize: '13px'
-              }}
             >
-              ← Previous
+              ← Prev
             </button>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              color: '#9ca3af',
-              fontSize: '13px'
-            }}>
+            <span style={{ color: '#64748b', fontSize: '12px' }}>
               Page {page}
-            </div>
+            </span>
             <button
+              className="nav-btn"
               onClick={() => setPage(page + 1)}
               disabled={reports.length < limit}
-              style={{
-                padding: '8px 15px',
-                backgroundColor: reports.length < limit ? 'rgba(255,255,255,0.05)' : 'rgba(59, 130, 246, 0.1)',
-                color: reports.length < limit ? '#6b7280' : '#3b82f6',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '6px',
-                cursor: reports.length < limit ? 'not-allowed' : 'pointer',
-                fontSize: '13px'
-              }}
             >
               Next →
             </button>

@@ -1,4 +1,4 @@
-/* Layout */
+/* ── Layout ── */
 .app-shell {
 	min-height: 100vh;
 	width: 100%;
@@ -11,61 +11,79 @@
 	width: min(1100px, 100%);
 	display: flex;
 	flex-direction: column;
-	gap: 20px;
+	gap: 24px;
 }
 
 .hero {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 16px;
+	gap: 20px;
 }
 
 .hero h1 {
-	margin: 6px 0;
-	font-size: 32px;
+	margin: 0;
+	font-size: 28px;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	color: #f1f5f9;
+}
+
+.hero .muted {
+	font-size: 14px;
+	margin-top: 6px;
 }
 
 .eyebrow {
-	letter-spacing: 0.1em;
+	letter-spacing: 0.08em;
 	text-transform: uppercase;
-	font-size: 12px;
-	color: #9aa5c3;
+	font-size: 11px;
+	color: #64748b;
+	font-weight: 500;
 }
 
 .muted {
-	color: #9aa5c3;
-	margin: 6px 0;
+	color: #94a3b8;
+	margin: 4px 0;
+	line-height: 1.5;
 }
 
+/* ── Status Chip ── */
 .status-chip {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	padding: 8px 12px;
-	border: 1px solid rgba(255,255,255,0.12);
-	border-radius: 12px;
+	padding: 6px 14px;
+	border: 1px solid rgba(255,255,255,0.08);
+	border-radius: 999px;
 	background: rgba(255,255,255,0.04);
-	color: #d8e1ff;
+	color: #cbd5e1;
+	font-size: 12px;
+	font-weight: 500;
 }
 
 .dot {
-	width: 10px;
-	height: 10px;
+	width: 8px;
+	height: 8px;
 	border-radius: 50%;
 	display: inline-block;
 }
 
-.dot-green { background: #22c55e; }
-.dot-red { background: #ef4444; }
-.dot-amber { background: #f59e0b; }
+.dot-green { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.4); }
+.dot-red { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.4); }
+.dot-amber { background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.4); }
 
+/* ── Cards ── */
 .card {
-	background: rgba(255,255,255,0.04);
-	border: 1px solid rgba(255,255,255,0.08);
-	border-radius: 16px;
-	padding: 18px;
-	box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+	background: rgba(255,255,255,0.025);
+	border: 1px solid rgba(255,255,255,0.06);
+	border-radius: 14px;
+	padding: 20px;
+	transition: border-color 0.2s ease;
+}
+
+.card:hover {
+	border-color: rgba(255,255,255,0.1);
 }
 
 .card-header {
@@ -73,36 +91,39 @@
 	justify-content: space-between;
 	align-items: center;
 	gap: 8px;
-	margin-bottom: 8px;
+	margin-bottom: 10px;
 }
 
 .timestamp {
-	font-size: 13px;
-	color: #9aa5c3;
+	font-size: 12px;
+	color: #64748b;
 }
 
+/* ── Pills ── */
 .pill {
 	display: inline-flex;
 	align-items: center;
-	padding: 4px 10px;
+	padding: 3px 10px;
 	border-radius: 999px;
-	background: rgba(99,102,241,0.18);
-	color: #cbd1ff;
+	background: rgba(99,102,241,0.1);
+	color: #a5b4fc;
 	font-weight: 600;
-	font-size: 12px;
-	border: 1px solid rgba(99,102,241,0.4);
+	font-size: 11px;
+	border: 1px solid rgba(99,102,241,0.2);
+	letter-spacing: 0.01em;
 }
 
 .pill-ghost {
-	background: rgba(255,255,255,0.06);
+	background: rgba(255,255,255,0.04);
 	border-color: rgba(255,255,255,0.08);
-	color: #c3c9e6;
+	color: #94a3b8;
 }
 
+/* ── Forms ── */
 .form {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 16px;
 }
 
 .field {
@@ -112,45 +133,74 @@
 }
 
 .field label {
-	font-weight: 600;
-	color: #d8e1ff;
+	font-weight: 500;
+	font-size: 13px;
+	color: #94a3b8;
+	letter-spacing: 0.01em;
 }
 
-.field input {
-	background: rgba(0,0,0,0.2);
-	border: 1px solid rgba(255,255,255,0.12);
-	border-radius: 12px;
-	padding: 12px;
-	color: #e6ecf5;
-	font-size: 15px;
-	transition: border 0.15s ease, box-shadow 0.15s ease;
+.field input,
+.field select {
+	background: rgba(255,255,255,0.04);
+	border: 1px solid rgba(255,255,255,0.1);
+	border-radius: 10px;
+	padding: 11px 14px;
+	color: #e2e8f0;
+	font-size: 14px;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+	font-family: inherit;
 }
 
-.field input:focus {
+.field input:focus,
+.field select:focus {
 	outline: none;
-	border-color: rgba(99,102,241,0.6);
-	box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+	border-color: rgba(99,102,241,0.5);
+	box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
 }
 
+.field input::placeholder {
+	color: #475569;
+}
+
+.field select option {
+	background-color: #1e293b;
+	color: #e2e8f0;
+	padding: 8px;
+}
+
+.field select option:checked {
+	background-color: #6366f1;
+	color: white;
+}
+
+/* ── Actions ── */
 .actions {
 	display: flex;
 	align-items: center;
 	gap: 12px;
+	margin-top: 4px;
 }
 
+/* ── Buttons ── */
 button {
-	background: linear-gradient(120deg, #6366f1, #22c55e);
+	background: #6366f1;
 	border: none;
-	color: #0b1021;
-	padding: 12px 18px;
-	border-radius: 12px;
-	font-weight: 700;
+	color: #fff;
+	padding: 10px 18px;
+	border-radius: 10px;
+	font-weight: 600;
+	font-size: 14px;
 	cursor: pointer;
-	transition: transform 0.1s ease, filter 0.1s ease;
+	transition: background 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+	font-family: inherit;
+}
+
+button:hover:not(:disabled) {
+	background: #5558e6;
 }
 
 button:disabled {
-	filter: grayscale(0.4);
+	opacity: 0.45;
 	cursor: not-allowed;
 }
 
@@ -158,36 +208,60 @@ button:not(:disabled):active {
 	transform: translateY(1px);
 }
 
-.error {
-	background: rgba(239,68,68,0.12);
-	color: #fecaca;
-	border: 1px solid rgba(239,68,68,0.4);
-	padding: 10px 12px;
-	border-radius: 12px;
+/* ── Nav Button ── */
+.nav-btn {
+	padding: 8px 16px;
+	background: rgba(255,255,255,0.05);
+	color: #cbd5e1;
+	border: 1px solid rgba(255,255,255,0.08);
+	border-radius: 8px;
+	font-size: 13px;
+	font-weight: 500;
+	transition: all 0.15s ease;
 }
 
+.nav-btn:hover:not(:disabled) {
+	background: rgba(255,255,255,0.08);
+	border-color: rgba(255,255,255,0.15);
+	color: #f1f5f9;
+}
+
+/* ── Error ── */
+.error {
+	background: rgba(239,68,68,0.08);
+	color: #fca5a5;
+	border: 1px solid rgba(239,68,68,0.2);
+	padding: 10px 14px;
+	border-radius: 10px;
+	font-size: 13px;
+}
+
+/* ── Progress ── */
 .progress {
 	position: relative;
 	background: rgba(255,255,255,0.06);
 	border-radius: 999px;
 	overflow: hidden;
-	border: 1px solid rgba(255,255,255,0.08);
-	height: 14px;
+	border: 1px solid rgba(255,255,255,0.06);
+	height: 6px;
 }
 
 .progress-bar {
 	position: absolute;
 	inset: 0;
-	background: linear-gradient(90deg, #22c55e, #6366f1);
-	transition: width 0.25s ease;
+	background: #6366f1;
+	transition: width 0.3s ease;
+	border-radius: 999px;
 }
 
 .progress-label {
 	margin-top: 6px;
-	color: #cbd1ff;
-	font-size: 13px;
+	color: #94a3b8;
+	font-size: 12px;
+	font-weight: 500;
 }
 
+/* ── Grid / Stack ── */
 .grid {
 	display: grid;
 	grid-template-columns: 1fr;
@@ -202,58 +276,130 @@ button:not(:disabled):active {
 
 .bullets {
 	padding-left: 18px;
-	color: #d8e1ff;
+	color: #cbd5e1;
+	line-height: 1.7;
 }
 
+/* ── Frames ── */
 .frames-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 	gap: 10px;
-	margin-top: 10px;
+	margin-top: 12px;
 }
 
 .frame-thumb {
 	display: block;
-	padding: 10px;
-	border-radius: 12px;
-	background: rgba(255,255,255,0.03);
+	padding: 0;
+	border-radius: 10px;
+	background: rgba(255,255,255,0.025);
 	border: 1px solid rgba(255,255,255,0.06);
-	transition: border 0.15s ease, transform 0.15s ease;
+	transition: border-color 0.2s ease, transform 0.15s ease;
+	overflow: hidden;
 }
 
 .frame-thumb:hover {
-	border-color: rgba(99,102,241,0.5);
-	transform: translateY(-1px);
+	border-color: rgba(99,102,241,0.35);
+	transform: translateY(-2px);
 }
 
 .frame-meta {
 	display: flex;
 	justify-content: space-between;
-	color: #cbd1ff;
-	font-size: 13px;
+	color: #94a3b8;
+	font-size: 12px;
 }
 
 .frame-desc {
-	margin-top: 8px;
-	color: #e6ecf5;
+	margin-top: 6px;
+	color: #e2e8f0;
 	font-weight: 600;
-	font-size: 14px;
+	font-size: 13px;
+	line-height: 1.4;
 }
 
+/* ── Chips / Tags ── */
 .chips {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px;
-	margin-top: 10px;
+	gap: 6px;
+	margin-top: 12px;
 }
 
 .chip {
-	padding: 6px 10px;
+	padding: 4px 10px;
 	border-radius: 999px;
-	background: rgba(255,255,255,0.06);
-	border: 1px solid rgba(255,255,255,0.1);
-	color: #cbd1ff;
+	background: rgba(255,255,255,0.04);
+	border: 1px solid rgba(255,255,255,0.08);
+	color: #94a3b8;
+	font-size: 12px;
+}
+
+/* ═══════════════════════════════════════════════
+   Toggle Switch (iOS-style)
+   ═══════════════════════════════════════════════ */
+.toggle-switch {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	cursor: pointer;
+	user-select: none;
+}
+
+.toggle-switch input {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.toggle-track {
+	position: relative;
+	width: 44px;
+	height: 24px;
+	background: #334155;
+	border-radius: 999px;
+	transition: background 0.25s ease;
+	flex-shrink: 0;
+}
+
+.toggle-track::after {
+	content: '';
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 18px;
+	height: 18px;
+	background: #94a3b8;
+	border-radius: 50%;
+	transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.25s ease;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.toggle-switch input:checked + .toggle-track {
+	background: #6366f1;
+}
+
+.toggle-switch input:checked + .toggle-track::after {
+	transform: translateX(20px);
+	background: #fff;
+}
+
+/* Green variant for public toggle */
+.toggle-switch input:checked + .toggle-track.toggle-track--green {
+	background: #22c55e;
+}
+
+.toggle-label {
 	font-size: 13px;
+	color: #94a3b8;
+	font-weight: 500;
+	transition: color 0.2s ease;
+}
+
+.toggle-switch input:checked ~ .toggle-label {
+	color: #e2e8f0;
 }
 
 /* ── Auth Header ── */
@@ -262,53 +408,69 @@ button:not(:disabled):active {
 	top: 0;
 	right: 0;
 	z-index: 100;
-	padding: 16px 24px;
+	padding: 14px 20px;
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	gap: 10px;
 }
 
 .auth-buttons {
 	display: flex;
-	gap: 10px;
+	gap: 8px;
 }
 
 .auth-btn {
-	padding: 8px 18px !important;
-	border-radius: 10px !important;
+	padding: 7px 16px !important;
+	border-radius: 8px !important;
 	font-size: 13px !important;
-	font-weight: 600 !important;
+	font-weight: 500 !important;
 	cursor: pointer;
-	transition: all 0.2s ease;
+	transition: all 0.15s ease;
 }
 
 .auth-btn-signin {
-	background: rgba(255,255,255,0.08) !important;
-	color: #d8e1ff !important;
-	border: 1px solid rgba(255,255,255,0.15) !important;
+	background: rgba(255,255,255,0.06) !important;
+	color: #cbd5e1 !important;
+	border: 1px solid rgba(255,255,255,0.1) !important;
 }
 
 .auth-btn-signin:hover {
-	background: rgba(255,255,255,0.14) !important;
-	border-color: rgba(99,102,241,0.5) !important;
+	background: rgba(255,255,255,0.1) !important;
+	border-color: rgba(255,255,255,0.2) !important;
 }
 
 .auth-btn-signup {
-	background: linear-gradient(120deg, #6366f1, #22c55e) !important;
-	color: #0b1021 !important;
+	background: #6366f1 !important;
+	color: #fff !important;
 	border: none !important;
 }
 
 .auth-btn-signup:hover {
-	filter: brightness(1.1);
+	background: #5558e6 !important;
 }
 
 .auth-user {
 	display: flex;
 	align-items: center;
+	gap: 4px;
 }
 
-/* ── Auth Gate (unauthenticated landing) ── */
+/* ── Credits Badge ── */
+.credits-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 5px 12px;
+	background: rgba(99,102,241,0.08);
+	border: 1px solid rgba(99,102,241,0.15);
+	border-radius: 999px;
+	font-size: 13px;
+	color: #a5b4fc;
+	font-weight: 500;
+	margin-right: 8px;
+}
+
+/* ── Auth Gate ── */
 .auth-gate {
 	display: flex;
 	align-items: center;
@@ -320,79 +482,90 @@ button:not(:disabled):active {
 
 .auth-gate-content {
 	text-align: center;
-	max-width: 480px;
+	max-width: 440px;
 	padding: 48px 40px;
-	background: rgba(255,255,255,0.03);
-	border: 1px solid rgba(255,255,255,0.08);
-	border-radius: 24px;
-	box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-	backdrop-filter: blur(16px);
+	background: rgba(255,255,255,0.025);
+	border: 1px solid rgba(255,255,255,0.06);
+	border-radius: 20px;
+	backdrop-filter: blur(12px);
 }
 
 .auth-gate-icon {
-	font-size: 56px;
+	font-size: 48px;
 	margin-bottom: 16px;
 }
 
 .auth-gate-content h1 {
-	font-size: 32px;
+	font-size: 28px;
+	font-weight: 700;
 	margin: 0 0 12px;
-	background: linear-gradient(120deg, #e0e7ff, #6366f1);
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
-	background-clip: text;
+	color: #f1f5f9;
+	letter-spacing: -0.02em;
 }
 
 .auth-gate-cta {
-	color: #6b7280;
-	font-size: 14px;
-	margin: 24px 0 20px;
+	color: #64748b;
+	font-size: 12px;
+	margin: 28px 0 20px;
 	text-transform: uppercase;
-	letter-spacing: 0.08em;
+	letter-spacing: 0.1em;
 	font-weight: 500;
 }
 
 .auth-buttons-large {
 	display: flex;
-	gap: 14px;
+	gap: 12px;
 	justify-content: center;
 }
 
 .auth-btn-large {
-	padding: 14px 28px !important;
-	border-radius: 14px !important;
-	font-size: 15px !important;
-	font-weight: 700 !important;
+	padding: 12px 28px !important;
+	border-radius: 10px !important;
+	font-size: 14px !important;
+	font-weight: 600 !important;
 	cursor: pointer;
-	transition: all 0.2s ease;
+	transition: all 0.15s ease;
 }
 
 .auth-btn-signin-large {
-	background: rgba(255,255,255,0.08) !important;
-	color: #d8e1ff !important;
-	border: 1px solid rgba(255,255,255,0.18) !important;
+	background: rgba(255,255,255,0.06) !important;
+	color: #cbd5e1 !important;
+	border: 1px solid rgba(255,255,255,0.12) !important;
 }
 
 .auth-btn-signin-large:hover {
-	background: rgba(255,255,255,0.14) !important;
-	border-color: rgba(99,102,241,0.5) !important;
+	background: rgba(255,255,255,0.1) !important;
+	border-color: rgba(255,255,255,0.2) !important;
 }
 
 .auth-btn-signup-large {
-	background: linear-gradient(120deg, #6366f1, #22c55e) !important;
-	color: #0b1021 !important;
+	background: #6366f1 !important;
+	color: #fff !important;
 	border: none !important;
 }
 
 .auth-btn-signup-large:hover {
-	filter: brightness(1.1);
-	transform: translateY(-1px);
+	background: #5558e6 !important;
 }
 
+/* ── Animations ── */
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(6px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ── */
 @media (max-width: 720px) {
 	.app-shell { padding: 28px 12px 48px; }
 	.hero { flex-direction: column; align-items: flex-start; }
 	.actions { flex-direction: column; align-items: flex-start; }
 	.auth-buttons-large { flex-direction: column; }
 	.auth-gate-content { padding: 32px 24px; }
+	.toggle-track { width: 40px; height: 22px; }
+	.toggle-track::after { width: 16px; height: 16px; }
+	.toggle-switch input:checked + .toggle-track::after { transform: translateX(18px); }
 }

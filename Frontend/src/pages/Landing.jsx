@@ -23,6 +23,26 @@ const Landing = () => {
   const [currentAction, setCurrentAction] = useState('');
   const [logs, setLogs] = useState([]);
   const [jobSourceInfo, setJobSourceInfo] = useState(null); // video source metadata for embed
+  const [visibility, setVisibility] = useState('public'); // 'public' or 'private'
+  const [credits, setCredits] = useState(null); // user's credit balance
+
+  // Fetch credit balance
+  const fetchCredits = async () => {
+    if (!user?.id) return;
+    try {
+      const resp = await fetch(`${API_BASE}/api/users/me?user_id=${user.id}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        setCredits(data.credits);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch credits', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCredits();
+  }, [user?.id]);
 
   // Detect video source from URL
   const detectVideoSource = (url) => {
@@ -117,6 +137,7 @@ const Landing = () => {
         if (user?.id) {
           formData.append('user_id', user.id);
         }
+        formData.append('visibility', visibility);
 
         const resp = await fetch(`${API_BASE}/api/videos/process-upload`, {
           method: 'POST',
@@ -163,6 +184,7 @@ const Landing = () => {
           youtube_url: url,
           video_name: videoName.trim() || 'Untitled Video',
           user_id: user?.id || null,
+          visibility: visibility,
         };
       } else {
         endpoint = `${API_BASE}/api/videos/process`;
@@ -170,6 +192,7 @@ const Landing = () => {
           drive_video_url: url,
           video_name: videoName.trim() || 'Untitled Video',
           user_id: user?.id || null,
+          visibility: visibility,
         };
       }
 
@@ -239,6 +262,8 @@ const Landing = () => {
       }
       const data = await resp.json();
       setResult(data);
+      // Refresh credit balance after results load
+      fetchCredits();
       // Also capture source info from result
       if (data.youtube_video_id || data.drive_file_id || data.drive_video_url || data.youtube_url) {
         setJobSourceInfo({
@@ -446,9 +471,10 @@ const Landing = () => {
             Upload a video file, or paste a Google Drive or YouTube video link, kick off processing, and see transcript + key frames + insights.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           {viewingPastReport && (
             <button
+              className="nav-btn"
               onClick={() => {
                 setViewingPastReport(false);
                 setJobId('');
@@ -458,71 +484,12 @@ const Landing = () => {
                 setJobSourceInfo(null);
                 navigate('/');
               }}
-              style={{
-                padding: '10px 20px',
-                backgroundColor: 'rgba(255,255,255,0.1)',
-                color: 'white',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseOver={(e) => {
-                e.target.style.backgroundColor = 'rgba(255,255,255,0.15)';
-              }}
-              onMouseOut={(e) => {
-                e.target.style.backgroundColor = 'rgba(255,255,255,0.1)';
-              }}
             >
-              ← Back to New Video
+              ← Back
             </button>
           )}
-          <button
-            onClick={() => navigate('/reports')}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              color: 'white',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseOver={(e) => {
-              e.target.style.backgroundColor = 'rgba(255,255,255,0.15)';
-            }}
-            onMouseOut={(e) => {
-              e.target.style.backgroundColor = 'rgba(255,255,255,0.1)';
-            }}
-          >
-            📊 Past Reports
-          </button>
-          <button
-            onClick={() => navigate('/topics')}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              color: 'white',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseOver={(e) => {
-              e.target.style.backgroundColor = 'rgba(255,255,255,0.15)';
-            }}
-            onMouseOut={(e) => {
-              e.target.style.backgroundColor = 'rgba(255,255,255,0.1)';
-            }}
-          >
-            📚 Topics
-          </button>
+          <button className="nav-btn" onClick={() => navigate('/reports')}>Reports</button>
+          <button className="nav-btn" onClick={() => navigate('/topics')}>Topics</button>
           <div className="status-chip">
             <span className={`dot dot-${status === 'completed' ? 'green' : status === 'failed' ? 'red' : 'amber'}`} />
             <span>{status === 'idle' || viewingPastReport ? 'Completed' : status}</span>
@@ -544,16 +511,6 @@ const Landing = () => {
                 if (e.target.value === 'upload') {
                   setVideoUrl('');
                 }
-              }}
-              style={{
-                padding: '12px',
-                backgroundColor: 'rgba(255,255,255,0.05)',
-                color: 'grey',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '8px',
-                fontSize: '14px',
-                width: '100%',
-                marginBottom: '15px'
               }}
             >
               <option value="auto">Auto-detect from URL</option>
@@ -580,20 +537,11 @@ const Landing = () => {
                   }
                 }}
                 required
-                style={{
-                  padding: '12px',
-                  backgroundColor: 'rgba(255,255,255,0.05)',
-                  color: 'white',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  width: '100%',
-                  cursor: 'pointer'
-                }}
+                style={{ cursor: 'pointer' }}
               />
               {uploadedFile && (
-                <div style={{ marginTop: '8px', fontSize: '12px', color: '#10b981' }}>
-                  ✓ Selected: {uploadedFile.name} ({(uploadedFile.size / (1024 * 1024)).toFixed(2)} MB)
+                <div style={{ marginTop: '6px', fontSize: '12px', color: '#22c55e' }}>
+                  ✓ {uploadedFile.name} ({(uploadedFile.size / (1024 * 1024)).toFixed(2)} MB)
                 </div>
               )}
             </div>
@@ -634,13 +582,73 @@ const Landing = () => {
             />
           </div>
 
+          {/* Visibility Toggle */}
+          <div className="field">
+            <label>Visibility</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '8px 0' }}>
+              <label className="toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={visibility === 'public'}
+                  onChange={(e) => setVisibility(e.target.checked ? 'public' : 'private')}
+                />
+                <span className="toggle-track toggle-track--green" />
+              </label>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: '500', color: visibility === 'public' ? '#22c55e' : '#94a3b8' }}>
+                  {visibility === 'public' ? 'Public' : 'Private'}
+                </div>
+                <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                  {visibility === 'public'
+                    ? 'Visible to everyone \u2014 1 credit/min'
+                    : 'Only you can see this \u2014 3 credits/min'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Credit Balance */}
+          {credits !== null && (
+            <div style={{
+              padding: '10px 14px',
+              backgroundColor: 'rgba(99,102,241,0.05)',
+              border: '1px solid rgba(99,102,241,0.12)',
+              borderRadius: '10px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              fontSize: '13px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#a5b4fc' }}>
+                <span>💎</span>
+                <span>Balance: <strong style={{ color: credits > 0 ? '#22c55e' : '#ef4444' }}>{Math.round(credits)}</strong></span>
+              </div>
+              <div style={{ color: '#64748b', fontSize: '12px' }}>
+                {visibility === 'private' ? '3×' : '1×'} rate
+              </div>
+            </div>
+          )}
+          {credits !== null && credits <= 0 && (
+            <div style={{
+              padding: '10px 14px',
+              backgroundColor: 'rgba(239,68,68,0.06)',
+              borderLeft: '3px solid #ef4444',
+              borderRadius: '4px',
+              color: '#fca5a5',
+              fontSize: '13px'
+            }}>
+              You have no credits remaining. Processing is disabled.
+            </div>
+          )}
+
           <div className="actions">
             <button
               type="submit"
               disabled={
                 (videoSource === 'upload' ? !uploadedFile : !videoUrl.trim()) ||
                 status === 'pending' ||
-                polling
+                polling ||
+                (credits !== null && credits <= 0)
               }
             >
               {status === 'pending' || polling ? 'Processing…' : videoSource === 'playlist' ? '📚 Process Playlist' : 'Start Processing'}
@@ -651,36 +659,36 @@ const Landing = () => {
           {error && <div className="error">{error}</div>}
 
           {(status !== 'idle' && status !== 'failed') && (
-            <div style={{ marginTop: '20px' }}>
+            <div style={{ marginTop: '16px' }}>
               <div className="progress">
                 <div className="progress-bar" style={{ width: `${Math.round(progress * 100)}%` }} />
-                <div className="progress-label">{Math.round(progress * 100)}%</div>
               </div>
+              <div className="progress-label">{Math.round(progress * 100)}%</div>
               
-              {/* User-Centric Processing Logs */}
+              {/* Processing Logs */}
               <div style={{ 
-                marginTop: '15px', 
-                padding: '15px', 
-                backgroundColor: 'rgba(255,255,255,0.03)', 
+                marginTop: '12px', 
+                padding: '14px', 
+                backgroundColor: 'rgba(255,255,255,0.02)', 
                 borderRadius: '10px',
                 border: '1px solid rgba(255,255,255,0.05)'
               }}>
                 <div style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
-                  gap: '10px', 
-                  marginBottom: '10px' 
+                  gap: '8px', 
+                  marginBottom: '8px' 
                 }}>
-                  <div className="loading-spinner-small" style={{ 
-                    width: '12px', 
-                    height: '12px', 
-                    border: '2px solid rgba(59,130,246,0.3)', 
-                    borderTopColor: '#3b82f6', 
+                  <div style={{ 
+                    width: '10px', 
+                    height: '10px', 
+                    border: '2px solid rgba(99,102,241,0.3)', 
+                    borderTopColor: '#6366f1', 
                     borderRadius: '50%',
                     animation: 'spin 1s linear infinite'
                   }} />
-                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#e0e7ff' }}>
-                    {currentAction || 'Initializing AI pipeline...'}
+                  <span style={{ fontSize: '13px', fontWeight: '500', color: '#e2e8f0' }}>
+                    {currentAction || 'Initializing...'}
                   </span>
                 </div>
                 
@@ -688,17 +696,17 @@ const Landing = () => {
                   <div style={{ 
                     display: 'flex', 
                     flexDirection: 'column', 
-                    gap: '6px',
-                    opacity: 0.7 
+                    gap: '4px',
+                    opacity: 0.6 
                   }}>
                     {logs.slice(-3).reverse().map((log, i) => (
                       <div key={i} style={{ 
                         fontSize: '12px', 
-                        color: '#9ca3af',
+                        color: '#64748b',
                         display: 'flex',
-                        gap: '8px'
+                        gap: '6px'
                       }}>
-                        <span style={{ color: '#3b82f6' }}>•</span>
+                        <span style={{ color: '#6366f1' }}>·</span>
                         <span>{log.message}</span>
                       </div>
                     ))}
@@ -721,10 +729,10 @@ const Landing = () => {
                   position: 'relative',
                   height: '0',
                   paddingBottom: '56.25%',
-                  borderRadius: '10px',
+                  borderRadius: '12px',
                   overflow: 'hidden',
-                  marginBottom: '20px',
-                  border: '1px solid rgba(255,255,255,0.08)'
+                  marginBottom: '16px',
+                  border: '1px solid rgba(255,255,255,0.06)'
                 }}>
                   <iframe
                     src={links.embed}
@@ -745,18 +753,17 @@ const Landing = () => {
                       rel="noreferrer"
                       style={{
                         position: 'absolute',
-                        left: '10px',
-                        bottom: '10px',
-                        padding: '8px 12px',
-                        backgroundColor: 'rgba(0,0,0,0.55)',
+                        left: '8px',
+                        bottom: '8px',
+                        padding: '6px 10px',
+                        backgroundColor: 'rgba(0,0,0,0.6)',
                         color: 'white',
                         borderRadius: '6px',
-                        fontSize: '12px',
+                        fontSize: '11px',
                         textDecoration: 'none',
-                        border: '1px solid rgba(255,255,255,0.2)'
                       }}
                     >
-                      ▶ Open video
+                      Open video ↗
                     </a>
                   )}
                 </div>
@@ -768,25 +775,17 @@ const Landing = () => {
             </div>
             {result.video_genre && result.video_genre !== 'unknown' && (
               <div style={{
-                marginBottom: '15px',
+                marginBottom: '12px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px'
               }}>
-                <span style={{
-                  padding: '4px 12px',
-                  backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                  color: '#60a5fa',
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  fontWeight: '500',
-                  textTransform: 'capitalize'
-                }}>
-                  🎬 {result.video_genre.replace(/_/g, ' ')}
+                <span className="pill" style={{ textTransform: 'capitalize' }}>
+                  {result.video_genre.replace(/_/g, ' ')}
                 </span>
                 {result.genre_confidence && (
-                  <span style={{ fontSize: '11px', color: '#9ca3af' }}>
-                    ({Math.round(result.genre_confidence * 100)}% confidence)
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>
+                    {Math.round(result.genre_confidence * 100)}%
                   </span>
                 )}
               </div>
@@ -804,107 +803,85 @@ const Landing = () => {
               </div>
             )}
 
-            {/* 5-Slide Executive Summary */}
+            {/* 5-Slide Summary */}
             {result.slide_summary?.length > 0 && (
-              <div style={{ marginTop: '24px' }}>
-                <h4 style={{ marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span>📊 5-Slide Summary</span>
-                  <span style={{
-                    fontSize: '11px',
-                    padding: '3px 10px',
-                    borderRadius: '999px',
-                    background: 'rgba(99,102,241,0.15)',
-                    color: '#a5b4fc',
-                    fontWeight: '500',
-                    border: '1px solid rgba(99,102,241,0.3)'
-                  }}>
-                    {result.slide_summary.length} slides
-                  </span>
+              <div style={{ marginTop: '20px' }}>
+                <h4 style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>Slide Summary</span>
+                  <span className="pill pill-ghost">{result.slide_summary.length} slides</span>
                 </h4>
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                  gap: '14px',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                  gap: '10px',
                 }}>
                   {result.slide_summary.map((slide, idx) => (
                     <div
                       key={idx}
                       style={{
-                        background: 'rgba(255,255,255,0.03)',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        borderRadius: '14px',
-                        padding: '18px',
-                        transition: 'border-color 0.2s ease, transform 0.2s ease',
-                        cursor: 'default',
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        borderRadius: '10px',
+                        padding: '16px',
+                        transition: 'border-color 0.2s ease',
                       }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)';
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-                        e.currentTarget.style.transform = 'translateY(0)';
-                      }}
+                      onMouseOver={(e) => e.currentTarget.style.borderColor = 'rgba(99,102,241,0.25)'}
+                      onMouseOut={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'}
                     >
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '10px',
-                        marginBottom: '12px'
+                        gap: '8px',
+                        marginBottom: '10px'
                       }}>
                         <span style={{
                           display: 'inline-flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          width: '28px',
-                          height: '28px',
-                          borderRadius: '8px',
-                          background: 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(34,197,94,0.3))',
-                          color: '#e0e7ff',
-                          fontSize: '13px',
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '6px',
+                          background: 'rgba(99,102,241,0.15)',
+                          color: '#a5b4fc',
+                          fontSize: '12px',
                           fontWeight: '700',
-                          border: '1px solid rgba(99,102,241,0.3)',
                           flexShrink: 0
                         }}>
                           {idx + 1}
                         </span>
                         <span style={{
-                          fontSize: '14px',
-                          fontWeight: '700',
-                          color: '#e0e7ff',
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          color: '#e2e8f0',
                           lineHeight: '1.3'
                         }}>
                           {slide.title}
                         </span>
                       </div>
-                      <ul style={{
-                        margin: 0,
-                        paddingLeft: '16px',
-                        listStyle: 'none',
-                      }}>
+                      <ul style={{ margin: 0, paddingLeft: '14px', listStyle: 'none' }}>
                         {slide.bullets?.map((bullet, bIdx) => (
                           <li
                             key={bIdx}
                             style={{
-                              fontSize: '13px',
-                              color: '#c3c9e6',
-                              lineHeight: '1.5',
-                              marginBottom: '6px',
+                              fontSize: '12px',
+                              color: '#94a3b8',
+                              lineHeight: '1.6',
+                              marginBottom: '4px',
                               position: 'relative',
-                              paddingLeft: '14px',
+                              paddingLeft: '12px',
                             }}
                           >
                             <span style={{
                               position: 'absolute',
                               left: 0,
-                              top: '6px',
-                              width: '5px',
-                              height: '5px',
+                              top: '7px',
+                              width: '4px',
+                              height: '4px',
                               borderRadius: '50%',
-                              background: 'rgba(99,102,241,0.6)',
+                              background: 'rgba(99,102,241,0.4)',
                             }} />
                             <span dangerouslySetInnerHTML={{
-                              __html: bullet.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#e0e7ff;font-weight:600">$1</strong>')
+                              __html: bullet.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#e2e8f0;font-weight:600">$1</strong>')
                             }} />
                           </li>
                         ))}

@@ -129,28 +129,28 @@ const VideoChatBot = ({ jobId, videoName }) => {
           position: 'fixed',
           bottom: '24px',
           right: '24px',
-          width: '56px',
-          height: '56px',
+          width: '52px',
+          height: '52px',
           borderRadius: '50%',
-          backgroundColor: '#3b82f6',
+          backgroundColor: '#6366f1',
           color: 'white',
           border: 'none',
-          boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+          boxShadow: '0 2px 10px rgba(99,102,241,0.3)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '24px',
-          transition: 'all 0.3s ease',
+          fontSize: '22px',
+          transition: 'all 0.2s ease',
           zIndex: 1000,
         }}
         onMouseOver={(e) => {
-          e.currentTarget.style.transform = 'scale(1.1)';
-          e.currentTarget.style.boxShadow = '0 6px 16px rgba(59, 130, 246, 0.5)';
+          e.currentTarget.style.transform = 'scale(1.08)';
+          e.currentTarget.style.boxShadow = '0 4px 14px rgba(99,102,241,0.4)';
         }}
         onMouseOut={(e) => {
           e.currentTarget.style.transform = 'scale(1)';
-          e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.4)';
+          e.currentTarget.style.boxShadow = '0 2px 10px rgba(99,102,241,0.3)';
         }}
         title="Video Insights Assistant"
       >
@@ -169,30 +169,29 @@ const VideoChatBot = ({ jobId, videoName }) => {
             height: '600px',
             maxHeight: 'calc(100vh - 140px)',
             backgroundColor: '#1e293b',
-            borderRadius: '16px',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+            borderRadius: '14px',
+            boxShadow: '0 4px 24px rgba(0, 0, 0, 0.25)',
+            border: '1px solid rgba(255,255,255,0.06)',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
             zIndex: 999,
-            animation: 'slideUp 0.3s ease-out',
+            animation: 'slideUp 0.25s ease-out',
           }}
         >
           {/* Header */}
           <div
             style={{
-              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-              padding: '20px',
+              background: '#6366f1',
+              padding: '16px 20px',
               color: 'white',
-              borderTopLeftRadius: '16px',
-              borderTopRightRadius: '16px',
             }}
           >
-            <div style={{ fontSize: '20px', fontWeight: '600', marginBottom: '4px' }}>
+            <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '2px' }}>
               Video Insights Assistant
             </div>
-            <div style={{ fontSize: '13px', opacity: 0.9 }}>
-              Ask questions about video content & insights
+            <div style={{ fontSize: '12px', opacity: 0.8 }}>
+              Ask questions about video content
             </div>
           </div>
 
@@ -201,10 +200,10 @@ const VideoChatBot = ({ jobId, videoName }) => {
             style={{
               flex: 1,
               overflowY: 'auto',
-              padding: '20px',
+              padding: '16px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '16px',
+              gap: '12px',
               backgroundColor: '#0f172a',
             }}
           >
@@ -219,13 +218,13 @@ const VideoChatBot = ({ jobId, videoName }) => {
                 <div
                   style={{
                     maxWidth: '80%',
-                    padding: '12px 16px',
-                    borderRadius: '12px',
-                    backgroundColor: message.role === 'user' ? '#3b82f6' : '#1e293b',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    backgroundColor: message.role === 'user' ? '#6366f1' : 'rgba(255,255,255,0.05)',
+                    border: message.role === 'user' ? 'none' : '1px solid rgba(255,255,255,0.06)',
                     color: 'white',
-                    fontSize: '14px',
+                    fontSize: '13px',
                     lineHeight: '1.6',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
                     wordBreak: 'break-word',
                   }}
                   dangerouslySetInnerHTML={{ 
@@ -239,12 +238,12 @@ const VideoChatBot = ({ jobId, videoName }) => {
               <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
                 <div
                   style={{
-                    padding: '12px 16px',
-                    borderRadius: '12px',
-                    backgroundColor: '#1e293b',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.06)',
                     color: '#94a3b8',
-                    fontSize: '14px',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                    fontSize: '13px',
                   }}
                 >
                   <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
@@ -263,35 +262,35 @@ const VideoChatBot = ({ jobId, videoName }) => {
           {messages.length === 1 && (
             <div
               style={{
-                padding: '12px 20px',
+                padding: '10px 16px',
                 backgroundColor: '#0f172a',
-                borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+                borderTop: '1px solid rgba(255, 255, 255, 0.06)',
               }}
             >
-              <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '8px', fontWeight: '500' }}>
-                💡 Try asking:
+              <div style={{ fontSize: '10px', color: '#64748b', marginBottom: '6px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Try asking
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 {suggestedQuestions.slice(0, 2).map((question, index) => (
                   <button
                     key={index}
                     onClick={() => handleSuggestionClick(question)}
                     style={{
-                      padding: '8px 12px',
-                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                      color: '#60a5fa',
-                      border: '1px solid rgba(59, 130, 246, 0.3)',
-                      borderRadius: '8px',
-                      fontSize: '12px',
+                      padding: '7px 10px',
+                      backgroundColor: 'rgba(99,102,241,0.08)',
+                      color: '#a5b4fc',
+                      border: '1px solid rgba(99,102,241,0.15)',
+                      borderRadius: '7px',
+                      fontSize: '11px',
                       cursor: 'pointer',
                       textAlign: 'left',
-                      transition: 'all 0.2s ease',
+                      transition: 'all 0.15s ease',
                     }}
                     onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.2)';
+                      e.currentTarget.style.backgroundColor = 'rgba(99,102,241,0.15)';
                     }}
                     onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                      e.currentTarget.style.backgroundColor = 'rgba(99,102,241,0.08)';
                     }}
                   >
                     "{question}"
@@ -304,11 +303,9 @@ const VideoChatBot = ({ jobId, videoName }) => {
           {/* Input Area */}
           <div
             style={{
-              padding: '16px 20px',
-              backgroundColor: '#1e293b',
-              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-              borderBottomLeftRadius: '16px',
-              borderBottomRightRadius: '16px',
+            padding: '12px 16px',
+            backgroundColor: '#1e293b',
+            borderTop: '1px solid rgba(255, 255, 255, 0.06)',
             }}
           >
             <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
@@ -322,47 +319,47 @@ const VideoChatBot = ({ jobId, videoName }) => {
                 disabled={isLoading}
                 style={{
                   flex: 1,
-                  padding: '12px 16px',
+                  padding: '10px 14px',
                   backgroundColor: '#0f172a',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '10px',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '8px',
                   color: 'white',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   outline: 'none',
-                  transition: 'border-color 0.2s ease',
+                  transition: 'border-color 0.15s ease',
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.borderColor = '#6366f1';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)';
                 }}
               />
               <button
                 onClick={handleSendMessage}
                 disabled={!inputMessage.trim() || isLoading}
                 style={{
-                  padding: '12px 16px',
-                  backgroundColor: inputMessage.trim() && !isLoading ? '#3b82f6' : '#334155',
+                  padding: '10px 14px',
+                  backgroundColor: inputMessage.trim() && !isLoading ? '#6366f1' : '#334155',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '10px',
+                  borderRadius: '8px',
                   cursor: inputMessage.trim() && !isLoading ? 'pointer' : 'not-allowed',
-                  fontSize: '18px',
+                  fontSize: '16px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  transition: 'all 0.2s ease',
-                  minWidth: '44px',
+                  transition: 'all 0.15s ease',
+                  minWidth: '40px',
                 }}
                 onMouseOver={(e) => {
                   if (inputMessage.trim() && !isLoading) {
-                    e.currentTarget.style.backgroundColor = '#2563eb';
+                    e.currentTarget.style.backgroundColor = '#4f46e5';
                   }
                 }}
                 onMouseOut={(e) => {
                   if (inputMessage.trim() && !isLoading) {
-                    e.currentTarget.style.backgroundColor = '#3b82f6';
+                    e.currentTarget.style.backgroundColor = '#6366f1';
                   }
                 }}
               >

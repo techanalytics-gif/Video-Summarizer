@@ -66,17 +66,20 @@ class VideoJobCreate(BaseModel):
     drive_video_url: str
     video_name: Optional[str] = None
     user_id: Optional[str] = None
+    visibility: Optional[str] = "public"
 
 
 class YouTubeJobCreate(BaseModel):
     youtube_url: str
     video_name: Optional[str] = None
     user_id: Optional[str] = None
+    visibility: Optional[str] = "public"
 
 
 class UploadJobCreate(BaseModel):
     video_name: Optional[str] = None
     user_id: Optional[str] = None
+    visibility: Optional[str] = "public"
 
 
 class VideoJob(BaseModel):
@@ -90,6 +93,7 @@ class VideoJob(BaseModel):
     video_name: Optional[str] = None
     user_id: Optional[str] = None  # Clerk user ID
     topic_id: Optional[str] = None  # Links to Topic._id if part of a playlist
+    visibility: str = "private"  # "public" or "private"
     status: str = "pending"  # pending, downloading, processing, completed, failed
     progress: float = 0.0
     error_message: Optional[str] = None
@@ -119,6 +123,10 @@ class VideoJob(BaseModel):
     
     # Report/Synthesis (stored for easy retrieval)
     report: Dict[str, Any] = {}  # Full synthesis result
+    
+    # Credit system
+    credits_charged: Optional[float] = None  # Credits deducted for this job
+    credit_rate: Optional[str] = None  # e.g. "1 credit/min (public)"
     
     # Metadata
     duration: Optional[float] = None
@@ -202,6 +210,8 @@ class ReportSummary(BaseModel):
     drive_file_id: Optional[str] = None
     video_genre: Optional[str] = None
     genre_confidence: Optional[float] = None
+    visibility: Optional[str] = None  # "public" or "private"
+    credits_charged: Optional[float] = None  # Credits consumed
     
     class Config:
         json_encoders = {ObjectId: str}
