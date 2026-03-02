@@ -216,7 +216,12 @@ async def get_job_status(job_id: str):
             video_name=job.get("video_name"),
             current_action=job.get("current_action", ""),
             processing_logs=job.get("processing_logs", []),
-            created_at=job.get("created_at", datetime.utcnow())
+            created_at=job.get("created_at", datetime.utcnow()),
+            video_source=job.get("video_source"),
+            youtube_url=job.get("youtube_url"),
+            youtube_video_id=job.get("youtube_video_id"),
+            drive_video_url=job.get("drive_video_url"),
+            drive_file_id=job.get("drive_file_id"),
         )
         
     except HTTPException:
@@ -271,7 +276,12 @@ async def get_job_results(job_id: str):
             completed_at=job.get("completed_at"),
             video_genre=job.get("video_genre"),
             genre_confidence=job.get("genre_confidence"),
-            genre_reason=job.get("genre_reason")
+            genre_reason=job.get("genre_reason"),
+            video_source=job.get("video_source"),
+            youtube_url=job.get("youtube_url"),
+            youtube_video_id=job.get("youtube_video_id"),
+            drive_video_url=job.get("drive_video_url"),
+            drive_file_id=job.get("drive_file_id"),
         )
         
     except HTTPException:

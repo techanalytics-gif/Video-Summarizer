@@ -143,6 +143,12 @@ class VideoJobResponse(BaseModel):
     current_action: str = ""
     processing_logs: List[Dict[str, Any]] = []
     created_at: datetime
+    # Source info for video embeds
+    video_source: Optional[str] = None
+    youtube_url: Optional[str] = None
+    youtube_video_id: Optional[str] = None
+    drive_video_url: Optional[str] = None
+    drive_file_id: Optional[str] = None
     
     class Config:
         json_encoders = {ObjectId: str}
@@ -165,6 +171,12 @@ class VideoJobResult(BaseModel):
     video_genre: Optional[str] = None
     genre_confidence: Optional[float] = None
     genre_reason: Optional[str] = None
+    # Source info for video embeds
+    video_source: Optional[str] = None
+    youtube_url: Optional[str] = None
+    youtube_video_id: Optional[str] = None
+    drive_video_url: Optional[str] = None
+    drive_file_id: Optional[str] = None
     
     class Config:
         json_encoders = {ObjectId: str}

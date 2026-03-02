@@ -22,6 +22,7 @@ const Landing = () => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [currentAction, setCurrentAction] = useState('');
   const [logs, setLogs] = useState([]);
+  const [jobSourceInfo, setJobSourceInfo] = useState(null); // video source metadata for embed
 
   // Detect video source from URL
   const detectVideoSource = (url) => {
@@ -71,6 +72,7 @@ const Landing = () => {
     setStatus('pending');
     setProgress(0);
     setJobId('');
+    setJobSourceInfo(null);
 
     // Handle playlist submission
     if (videoSource === 'playlist') {
@@ -203,6 +205,17 @@ const Landing = () => {
       setCurrentAction(data.current_action || '');
       setLogs(data.processing_logs || []);
 
+      // Capture source info for embed as soon as it's available
+      if (data.youtube_video_id || data.drive_file_id || data.drive_video_url || data.youtube_url) {
+        setJobSourceInfo({
+          video_source: data.video_source,
+          youtube_url: data.youtube_url,
+          youtube_video_id: data.youtube_video_id,
+          drive_video_url: data.drive_video_url,
+          drive_file_id: data.drive_file_id,
+        });
+      }
+
       if (data.status === 'completed') {
         setPolling(false);
         await fetchResults(id);
@@ -226,9 +239,63 @@ const Landing = () => {
       }
       const data = await resp.json();
       setResult(data);
+      // Also capture source info from result
+      if (data.youtube_video_id || data.drive_file_id || data.drive_video_url || data.youtube_url) {
+        setJobSourceInfo({
+          video_source: data.video_source,
+          youtube_url: data.youtube_url,
+          youtube_video_id: data.youtube_video_id,
+          drive_video_url: data.drive_video_url,
+          drive_file_id: data.drive_file_id,
+        });
+      }
     } catch (err) {
       setError(err.message || 'Failed to fetch results');
     }
+  };
+
+  const getVideoLinks = (res) => {
+    // 1. Backend-provided fields on result/status object
+    const src = res || {};
+    if (src.youtube_video_id) {
+      return {
+        embed: `https://www.youtube.com/embed/${src.youtube_video_id}`,
+        link: src.youtube_url || `https://youtu.be/${src.youtube_video_id}`
+      };
+    }
+    if (src.drive_file_id) {
+      return {
+        embed: `https://drive.google.com/file/d/${src.drive_file_id}/preview`,
+        link: `https://drive.google.com/file/d/${src.drive_file_id}/view?usp=sharing`
+      };
+    }
+    if (src.drive_video_url) {
+      const match = src.drive_video_url.match(/file\/d\/([^/]+)/);
+      const fileId = match ? match[1] : null;
+      return {
+        embed: fileId ? `https://drive.google.com/file/d/${fileId}/preview` : null,
+        link: src.drive_video_url
+      };
+    }
+    // 2. Fallback: polled source info (captured before result arrives)
+    if (jobSourceInfo) {
+      return getVideoLinks(jobSourceInfo);
+    }
+    // 3. Fallback: use the URL the user typed in the form
+    if (videoUrl) {
+      const ytMatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (ytMatch) {
+        return { embed: `https://www.youtube.com/embed/${ytMatch[1]}`, link: videoUrl };
+      }
+      const driveMatch = videoUrl.match(/file\/d\/([^/]+)/);
+      if (driveMatch) {
+        return {
+          embed: `https://drive.google.com/file/d/${driveMatch[1]}/preview`,
+          link: videoUrl
+        };
+      }
+    }
+    return { embed: null, link: null };
   };
 
   const renderTopics = () => {
@@ -388,6 +455,7 @@ const Landing = () => {
                 setResult(null);
                 setVideoUrl('');
                 setVideoName('');
+                setJobSourceInfo(null);
                 navigate('/');
               }}
               style={{
@@ -645,6 +713,55 @@ const Landing = () => {
       {result && (
         <section className="grid">
           <div className="card">
+            {/* Video Embed */}
+            {(() => {
+              const links = getVideoLinks(result);
+              return links.embed ? (
+                <div style={{
+                  position: 'relative',
+                  height: '0',
+                  paddingBottom: '56.25%',
+                  borderRadius: '10px',
+                  overflow: 'hidden',
+                  marginBottom: '20px',
+                  border: '1px solid rgba(255,255,255,0.08)'
+                }}>
+                  <iframe
+                    src={links.embed}
+                    title={result.video_name || 'Video'}
+                    style={{
+                      position: 'absolute',
+                      top: 0, left: 0,
+                      width: '100%', height: '100%',
+                      border: '0'
+                    }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                  {links.link && (
+                    <a
+                      href={links.link}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        position: 'absolute',
+                        left: '10px',
+                        bottom: '10px',
+                        padding: '8px 12px',
+                        backgroundColor: 'rgba(0,0,0,0.55)',
+                        color: 'white',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        textDecoration: 'none',
+                        border: '1px solid rgba(255,255,255,0.2)'
+                      }}
+                    >
+                      ▶ Open video
+                    </a>
+                  )}
+                </div>
+              ) : null;
+            })()}
             <div className="card-header">
               <div className="pill">Summary</div>
               <div className="timestamp">Duration: {result.duration ? `${Math.round(result.duration / 60)} min` : '—'}</div>
